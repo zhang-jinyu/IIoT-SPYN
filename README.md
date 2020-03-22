@@ -35,7 +35,7 @@ Step 2: Write the image file to a SD card
 Step 3: Use the following command in a terminal to install IIoT-SPYN
 
 ```bash
-$ sudo pip3 install --upgrade git+https://github.com/Xilinx/IIoT-SPYN.git
+$ sudo pip3 install --upgrade git+https://github.com/zhang-jinyu/IIoT-SPYN.git
 $ sudo reboot now
 ```
 
