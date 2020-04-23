@@ -20,13 +20,25 @@ Step 2: Write the image file to a SD card
 Step 3: Use the following command in a terminal to install IIoT-SPYN
 
 ```bash
-$ sudo pip3 install --upgrade git+https://github.com/Xilinx/IIoT-SPYN.git
+$ sudo pip3 install --upgrade git+https://github.com/zhang-jinyu/IIoT-SPYN.git
 $ sudo reboot now
 ```
 
 After the setup, new Jupyter notebooks will be added under the spyn folder, ready to try out, no additional steps are needed.
 
 ## Quick Start for Pynq-Z1 / Arty-Z7-20
+
+Step 1: Download the [**PYNQ image**](http://files.digilent.com/Products/PYNQ/pynq_z1_v2.1.img.zip)
+
+Step 2: Write the image file to a SD card
+
+Step 3: Use the following command in a terminal to install IIoT-SPYN
+
+```bash
+$ sudo pip3 install --upgrade git+https://github.com/zhang-jinyu/IIoT-SPYN.git
+$ sudo reboot now
+```
+## Quick Start for ZEDBOARD
 
 Step 1: Download the [**PYNQ image**](http://files.digilent.com/Products/PYNQ/pynq_z1_v2.1.img.zip)
 
@@ -57,7 +69,7 @@ After the setup, new Jupyter notebooks will be added under the spyn folder, read
 - [Arty-Z7-7020](https://store.digilentinc.com/arty-z7-apsoc-zynq-7000-development-board-for-makers-and-hobbyists/)
 - [PYNQ-Z1](https://store.digilentinc.com/pynq-z1-python-productivity-for-zynq/)
 - [Arty-Z7-7010 support added 5.11.2018](https://store.digilentinc.com/arty-z7-apsoc-zynq-7000-development-board-for-makers-and-hobbyists/)
-- [zedboar](https://store.digilentinc.com/zedboard-zynq-7000-arm-fpga-soc-development-board/)
+- [zedboard](https://store.digilentinc.com/zedboard-zynq-7000-arm-fpga-soc-development-board/)
 
 
 ## Licenses
