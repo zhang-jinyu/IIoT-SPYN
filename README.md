@@ -40,7 +40,7 @@ $ sudo reboot now
 ```
 ## Quick Start for ZEDBOARD
 
-Step 1: Download the [**PYNQ image**](http://files.digilent.com/Products/PYNQ/pynq_z1_v2.1.img.zip)
+Step 1: Download the [**PYNQ image**](https://stunepueducn-my.sharepoint.com/:u:/g/personal/jinyu_stu_nepu_edu_cn/EfBOv-PnQolBqMg4a3E2ouwB_vn0Xa0QD6TToH6owxjSHw?e=JgSjYe)
 
 Step 2: Write the image file to a SD card
 
