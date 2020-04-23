@@ -38,9 +38,9 @@ Step 3: Use the following command in a terminal to install IIoT-SPYN
 $ sudo pip3 install --upgrade git+https://github.com/zhang-jinyu/IIoT-SPYN.git
 $ sudo reboot now
 ```
-## Quick Start for ZEDBOARD
+## Quick Start for ZedBoard
 
-Step 1: Download the [**PYNQ image**](https://stunepueducn-my.sharepoint.com/:u:/g/personal/jinyu_stu_nepu_edu_cn/EfBOv-PnQolBqMg4a3E2ouwB_vn0Xa0QD6TToH6owxjSHw?e=JgSjYe)
+Step 1: Download the [**PYNQ-ZedBoard-2.5.img**](https://stunepueducn-my.sharepoint.com/:u:/g/personal/jinyu_stu_nepu_edu_cn/EfBOv-PnQolBqMg4a3E2ouwB_vn0Xa0QD6TToH6owxjSHw?e=JgSjYe)
 
 Step 2: Write the image file to a SD card
 
