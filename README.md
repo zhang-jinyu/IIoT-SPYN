@@ -40,7 +40,7 @@ $ sudo reboot now
 ```
 ## Quick Start for ZedBoard
 
-Step 1: Download the [**PYNQ-ZedBoard-2.5.img**](https://stunepueducn-my.sharepoint.com/:u:/g/personal/jinyu_stu_nepu_edu_cn/EfBOv-PnQolBqMg4a3E2ouwB_vn0Xa0QD6TToH6owxjSHw?e=JgSjYe)
+Step 1: Download the [**PYNQ-ZedBoard-2.5**]
 
 Step 2: Write the image file to a SD card
 
