@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# Phase_Test, my_2_3MUX, SOH3, SOH3
+# Debounce, Phase_Test, deadtime, my_2_3MUX, SOH3, SOH3
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -637,6 +637,17 @@ CONFIG.IN0_WIDTH {16} \
 CONFIG.IN1_WIDTH {16} \
  ] $Angle_concat
 
+  # Create instance: Debounce_0, and set properties
+  set block_name Debounce
+  set block_cell_name Debounce_0
+  if { [catch {set Debounce_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $Debounce_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
   # Create instance: Decimate_Samples, and set properties
   set Decimate_Samples [ create_bd_cell -type ip -vlnv trenz.biz:user:axis_decimate:1.0 Decimate_Samples ]
   set_property -dict [ list \
@@ -794,6 +805,17 @@ CONFIG.C_WR9_ALIAS {RPM Ki} \
 CONFIG.C_WR9_DEFAULT {9} \
  ] $control_axi_block
 
+  # Create instance: deadtime_0, and set properties
+  set block_name deadtime
+  set block_cell_name deadtime_0
+  if { [catch {set deadtime_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $deadtime_0 eq "" } {
+     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
   # Create instance: fit_timer_0, and set properties
   set fit_timer_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:fit_timer:2.0 fit_timer_0 ]
   set_property -dict [ list \
@@ -939,9 +961,10 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_net -net A_1 [get_bd_ports ENC_A] [get_bd_pins axis_encoder_0/A] [get_bd_pins xlconcat_2/In2]
   connect_bd_net -net Angle_Shift_slice_Dout [get_bd_pins Angle_Shift_slice/Dout] [get_bd_pins axis_encoder_0/angle_shift]
   connect_bd_net -net B_1 [get_bd_ports ENC_B] [get_bd_pins axis_encoder_0/B] [get_bd_pins xlconcat_2/In3]
-  connect_bd_net -net FCSMPC_GH [get_bd_pins FCSMPC/GH] [get_bd_pins my_2_3MUX_0/B1]
+  connect_bd_net -net Debounce_0_DBx [get_bd_pins Debounce_0/DBx] [get_bd_pins my_2_3MUX_0/SEL] [get_bd_pins system_ila_0/probe7] [get_bd_pins xlconcat_2/In0]
+  connect_bd_net -net FCSMPC_GH [get_bd_pins FCSMPC/GH] [get_bd_pins deadtime_0/GH_IN]
   connect_bd_net -net FCSMPC_GH_V_ap_vld [get_bd_pins FCSMPC/GH_V_ap_vld] [get_bd_pins system_ila_0/probe2]
-  connect_bd_net -net FCSMPC_GL [get_bd_pins FCSMPC/GL] [get_bd_pins my_2_3MUX_0/A1]
+  connect_bd_net -net FCSMPC_GL [get_bd_pins FCSMPC/GL] [get_bd_pins deadtime_0/GL_IN]
   connect_bd_net -net FCSMPC_Id_exp [get_bd_pins FCSMPC/Id_exp] [get_bd_pins system_ila_0/probe3]
   connect_bd_net -net FCSMPC_Id_out [get_bd_pins FCSMPC/Id_out] [get_bd_pins system_ila_0/probe0]
   connect_bd_net -net FCSMPC_Iq_exp [get_bd_pins FCSMPC/Iq_exp] [get_bd_pins system_ila_0/probe4]
@@ -954,7 +977,7 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_net -net SDI2_1 [get_bd_ports SDI2] [get_bd_pins xlconcat_0/In1]
   connect_bd_net -net SDI3_1 [get_bd_ports SDI3] [get_bd_pins xlconcat_0/In2]
   connect_bd_net -net SDV_1 [get_bd_ports SDV] [get_bd_pins xlconcat_0/In3]
-  connect_bd_net -net SW_0_1 [get_bd_ports SW_0] [get_bd_pins my_2_3MUX_0/SEL] [get_bd_pins system_ila_0/probe7] [get_bd_pins xlconcat_2/In0]
+  connect_bd_net -net SW_0_1 [get_bd_ports SW_0] [get_bd_pins Debounce_0/x]
   connect_bd_net -net Vq_1 [get_bd_pins FOC/Vq] [get_bd_pins control_axi_block/WR12]
   connect_bd_net -net axi_reg32_0_WR0 [get_bd_pins FOC/control] [get_bd_pins control_axi_block/WR0]
   connect_bd_net -net axi_reg32_0_WR1 [get_bd_pins FOC/Flux_Sp] [get_bd_pins control_axi_block/WR1]
@@ -975,6 +998,8 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_net -net axis_pwm_0_pwm_l [get_bd_pins axis_pwm_0/pwm_l] [get_bd_pins my_2_3MUX_0/A0]
   connect_bd_net -net control_axi_block_WR14 [get_bd_pins FCSMPC/MPC_Control] [get_bd_pins control_axi_block/WR14]
   connect_bd_net -net control_axi_block_WR15 [get_bd_pins control_axi_block/WR15] [get_bd_pins xlslice_1/Din]
+  connect_bd_net -net deadtime_0_GH_OUT [get_bd_pins deadtime_0/GH_OUT] [get_bd_pins my_2_3MUX_0/B1]
+  connect_bd_net -net deadtime_0_GL_OUT [get_bd_pins deadtime_0/GL_OUT] [get_bd_pins my_2_3MUX_0/A1]
   connect_bd_net -net fit_timer_0_Interrupt [get_bd_pins fit_timer_0/Interrupt] [get_bd_pins system_ila_0/probe5]
   connect_bd_net -net my_2_3MUX_0_A [get_bd_ports GL] [get_bd_pins my_2_3MUX_0/A] [get_bd_pins system_ila_0/probe6]
   set_property -dict [ list \
@@ -983,7 +1008,7 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_net -net my_2_3MUX_0_B [get_bd_ports GH] [get_bd_pins my_2_3MUX_0/B]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins Angle_RPM_Ib_Ia/s_axis_aresetn] [get_bd_pins Decimate_Samples/s_axis_aresetn] [get_bd_pins FCSMPC/axis_in_aresetn] [get_bd_pins FOC/ap_rst_n] [get_bd_pins I_a_Ib/aresetn] [get_bd_pins axi_datamover_0/m_axi_s2mm_aresetn] [get_bd_pins axi_datamover_0/m_axis_s2mm_cmdsts_aresetn] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axis_AD7403_0/m_axis_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins axis_data_fifo_1/s_axis_aresetn] [get_bd_pins axis_encoder_0/axis_aresetn] [get_bd_pins axis_monitor_0/axis_aresetn] [get_bd_pins axis_pwm_0/s_axis_aresetn] [get_bd_pins capture_axi_PYNQ/axi_aresetn] [get_bd_pins control_axi_block/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/M02_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins system_ila_0/resetn]
   connect_bd_net -net proc_sys_reset_0_peripheral_reset [get_bd_pins fit_timer_0/Rst] [get_bd_pins proc_sys_reset_0/peripheral_reset]
-  connect_bd_net -net processing_system7_0_FCLK_CLK1 [get_bd_pins Angle_RPM_Ib_Ia/s_axis_aclk] [get_bd_pins Decimate_Samples/s_axis_aclk] [get_bd_pins FCSMPC/ap_clk] [get_bd_pins FOC/ap_clk] [get_bd_pins I_a_Ib/aclk] [get_bd_pins Phase_Test_0/CLK] [get_bd_pins axi_datamover_0/m_axi_s2mm_aclk] [get_bd_pins axi_datamover_0/m_axis_s2mm_cmdsts_awclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axis_AD7403_0/m_axis_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins axis_data_fifo_1/s_axis_aclk] [get_bd_pins axis_encoder_0/axis_aclk] [get_bd_pins axis_monitor_0/axis_aclk] [get_bd_pins axis_pwm_0/s_axis_aclk] [get_bd_pins capture_axi_PYNQ/axi_aclk] [get_bd_pins control_axi_block/s_axi_aclk] [get_bd_pins fit_timer_0/Clk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/M02_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins system_ila_0/clk]
+  connect_bd_net -net processing_system7_0_FCLK_CLK1 [get_bd_pins Angle_RPM_Ib_Ia/s_axis_aclk] [get_bd_pins Debounce_0/CLK] [get_bd_pins Decimate_Samples/s_axis_aclk] [get_bd_pins FCSMPC/ap_clk] [get_bd_pins FOC/ap_clk] [get_bd_pins I_a_Ib/aclk] [get_bd_pins Phase_Test_0/CLK] [get_bd_pins axi_datamover_0/m_axi_s2mm_aclk] [get_bd_pins axi_datamover_0/m_axis_s2mm_cmdsts_awclk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins axis_AD7403_0/m_axis_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins axis_data_fifo_1/s_axis_aclk] [get_bd_pins axis_encoder_0/axis_aclk] [get_bd_pins axis_monitor_0/axis_aclk] [get_bd_pins axis_pwm_0/s_axis_aclk] [get_bd_pins capture_axi_PYNQ/axi_aclk] [get_bd_pins control_axi_block/s_axi_aclk] [get_bd_pins deadtime_0/CLK] [get_bd_pins fit_timer_0/Clk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins processing_system7_0/S_AXI_HP0_ACLK] [get_bd_pins ps7_0_axi_periph/ACLK] [get_bd_pins ps7_0_axi_periph/M00_ACLK] [get_bd_pins ps7_0_axi_periph/M01_ACLK] [get_bd_pins ps7_0_axi_periph/M02_ACLK] [get_bd_pins ps7_0_axi_periph/S00_ACLK] [get_bd_pins system_ila_0/clk]
   connect_bd_net -net processing_system7_0_FCLK_RESET0_N [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins processing_system7_0/FCLK_RESET0_N]
   connect_bd_net -net xlconcat_0_dout [get_bd_pins axis_AD7403_0/din] [get_bd_pins xlconcat_0/dout]
   connect_bd_net -net xlconcat_1_dout [get_bd_pins Angle_concat/dout] [get_bd_pins control_axi_block/RR0]
