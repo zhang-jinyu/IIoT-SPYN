@@ -440,7 +440,7 @@ proc create_hier_cell_FCSMPC { parentCell nameHier } {
   set AXI_to_Signal_0 [ create_bd_cell -type ip -vlnv mwn.de:user:AXI_to_Signal:1.0 AXI_to_Signal_0 ]
 
   # Create instance: FCSMPC_0, and set properties
-  set FCSMPC_0 [ create_bd_cell -type ip -vlnv TUM_EAL:hls:FCSMPC:3.0 FCSMPC_0 ]
+  set FCSMPC_0 [ create_bd_cell -type ip -vlnv xilinx.com:hls:FCSMPC:1.0 FCSMPC_0 ]
 
   # Create instance: Iq_Sp_slice, and set properties
   set Iq_Sp_slice [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 Iq_Sp_slice ]
@@ -462,7 +462,7 @@ CONFIG.CONST_WIDTH {32} \
   # Create instance: R_over_L, and set properties
   set R_over_L [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 R_over_L ]
   set_property -dict [ list \
-CONFIG.CONST_VAL {0x452ca6e5} \
+CONFIG.CONST_VAL {0x44202800} \
 CONFIG.CONST_WIDTH {32} \
  ] $R_over_L
 
@@ -491,7 +491,7 @@ CONFIG.CONST_WIDTH {32} \
   # Create instance: one_over_L, and set properties
   set one_over_L [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 one_over_L ]
   set_property -dict [ list \
-CONFIG.CONST_VAL {0x44960000} \
+CONFIG.CONST_VAL {0x44c35000} \
 CONFIG.CONST_WIDTH {32} \
  ] $one_over_L
 
@@ -524,19 +524,10 @@ CONFIG.CONST_WIDTH {16} \
   connect_bd_net -net AXI_to_Signal_0_Valid [get_bd_pins AXI_to_Signal_0/Valid] [get_bd_pins MPC_Trigger_v1_0_0/AXI_data_valid]
   connect_bd_net -net FCSMPC_0_GH_V [get_bd_pins FCSMPC_0/GH_V] [get_bd_pins SOH3_1/Data]
   connect_bd_net -net FCSMPC_0_GH_V_ap_vld [get_bd_pins GH_V_ap_vld] [get_bd_pins FCSMPC_0/GH_V_ap_vld] [get_bd_pins SOH3_1/Valid]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_nets FCSMPC_0_GH_V_ap_vld]
   connect_bd_net -net FCSMPC_0_GL_V [get_bd_pins FCSMPC_0/GL_V] [get_bd_pins SOH3_0/Data]
   connect_bd_net -net FCSMPC_0_GL_V_ap_vld [get_bd_pins FCSMPC_0/GL_V_ap_vld] [get_bd_pins SOH3_0/Valid]
   connect_bd_net -net FCSMPC_0_id_exp [get_bd_pins Id_exp] [get_bd_pins FCSMPC_0/id_exp]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_nets FCSMPC_0_id_exp]
   connect_bd_net -net FCSMPC_0_iq_exp [get_bd_pins Iq_exp] [get_bd_pins FCSMPC_0/iq_exp]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_nets FCSMPC_0_iq_exp]
   connect_bd_net -net P_Controller_0_RPM [get_bd_pins AXI_to_Signal_0/Signal_47_32] [get_bd_pins FCSMPC_0/RPM]
   connect_bd_net -net R_over_L_dout [get_bd_pins FCSMPC_0/R_over_L] [get_bd_pins R_over_L/dout]
   connect_bd_net -net SOH3_0_Data_vld [get_bd_pins GL] [get_bd_pins SOH3_0/Data_vld]
@@ -552,13 +543,7 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_net -net reset_dout [get_bd_pins FCSMPC_0/ap_rst] [get_bd_pins reset/dout]
   connect_bd_net -net xlslice_0_Dout [get_bd_pins FCSMPC_0/lm_over_c_i_sqr] [get_bd_pins xlslice_0/Dout]
   connect_bd_net -net xlslice_1_Dout [get_bd_pins Id_out] [get_bd_pins AXI_to_Signal_0/Signal_15_0] [get_bd_pins FCSMPC_0/id_m]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_nets xlslice_1_Dout]
   connect_bd_net -net xlslice_2_Dout [get_bd_pins Iq_out] [get_bd_pins AXI_to_Signal_0/Signal_31_16] [get_bd_pins FCSMPC_0/iq_m]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_nets xlslice_2_Dout]
   connect_bd_net -net zeros_dout [get_bd_pins FCSMPC_0/id_SP] [get_bd_pins zeros/dout]
 
   # Restore current instance
@@ -726,7 +711,7 @@ CONFIG.IS_ACLK_ASYNC {0} \
   set axis_encoder_0 [ create_bd_cell -type ip -vlnv trenz.biz:user:axis_encoder:1.0 axis_encoder_0 ]
   set_property -dict [ list \
 CONFIG.C_ANGLE_AXIS {true} \
-CONFIG.C_CPR {1000} \
+CONFIG.C_CPR {1250} \
 CONFIG.C_RPM_AXIS {true} \
 CONFIG.C_USE_SHIFT {true} \
  ] $axis_encoder_0
@@ -936,9 +921,6 @@ connect_bd_intf_net -intf_net Conn9 [get_bd_intf_pins FCSMPC/ap_ctrl] [get_bd_in
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_interconnect_0/M00_AXI] [get_bd_intf_pins processing_system7_0/S_AXI_HP0]
   connect_bd_intf_net -intf_net axis_AD7403_0_m_axis [get_bd_intf_pins axis_AD7403_0/m_axis] [get_bd_intf_pins axis_data_fifo_1/S_AXIS]
 connect_bd_intf_net -intf_net [get_bd_intf_nets axis_AD7403_0_m_axis] [get_bd_intf_pins axis_data_fifo_1/S_AXIS] [get_bd_intf_pins system_ila_0/SLOT_1_AXIS]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_intf_nets axis_AD7403_0_m_axis]
   connect_bd_intf_net -intf_net axis_data_fifo_0_M_AXIS [get_bd_intf_pins Decimate_Samples/m_axis] [get_bd_intf_pins axis_data_fifo_0/S_AXIS]
   connect_bd_intf_net -intf_net axis_data_fifo_0_M_AXIS1 [get_bd_intf_pins axis_data_fifo_0/M_AXIS] [get_bd_intf_pins capture_axi_PYNQ/s_axis]
   connect_bd_intf_net -intf_net axis_data_fifo_1_M_AXIS [get_bd_intf_pins I_a_Ib/S_AXIS] [get_bd_intf_pins axis_data_fifo_1/M_AXIS]
@@ -946,9 +928,6 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_intf_net -intf_net axis_encoder_0_m_rpm [get_bd_intf_pins Angle_RPM_Ib_Ia/sb_axis] [get_bd_intf_pins axis_encoder_0/m_rpm]
   connect_bd_intf_net -intf_net axis_monitor_0_m_axis [get_bd_intf_pins Decimate_Samples/s_axis] [get_bd_intf_pins axis_monitor_0/m_axis]
 connect_bd_intf_net -intf_net [get_bd_intf_nets axis_monitor_0_m_axis] [get_bd_intf_pins axis_monitor_0/m_axis] [get_bd_intf_pins system_ila_0/SLOT_0_AXIS]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_intf_nets axis_monitor_0_m_axis]
   connect_bd_intf_net -intf_net axis_subset_converter_0_M_AXIS [get_bd_intf_pins Angle_RPM_Ib_Ia/sa_axis] [get_bd_intf_pins I_a_Ib/M_AXIS]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
@@ -1002,9 +981,6 @@ HDL_ATTRIBUTE.DEBUG {true} \
   connect_bd_net -net deadtime_0_GL_OUT [get_bd_pins deadtime_0/GL_OUT] [get_bd_pins my_2_3MUX_0/A1]
   connect_bd_net -net fit_timer_0_Interrupt [get_bd_pins fit_timer_0/Interrupt] [get_bd_pins system_ila_0/probe5]
   connect_bd_net -net my_2_3MUX_0_A [get_bd_ports GL] [get_bd_pins my_2_3MUX_0/A] [get_bd_pins system_ila_0/probe6]
-  set_property -dict [ list \
-HDL_ATTRIBUTE.DEBUG {true} \
- ] [get_bd_nets my_2_3MUX_0_A]
   connect_bd_net -net my_2_3MUX_0_B [get_bd_ports GH] [get_bd_pins my_2_3MUX_0/B]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins Angle_RPM_Ib_Ia/s_axis_aresetn] [get_bd_pins Decimate_Samples/s_axis_aresetn] [get_bd_pins FCSMPC/axis_in_aresetn] [get_bd_pins FOC/ap_rst_n] [get_bd_pins I_a_Ib/aresetn] [get_bd_pins axi_datamover_0/m_axi_s2mm_aresetn] [get_bd_pins axi_datamover_0/m_axis_s2mm_cmdsts_aresetn] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axis_AD7403_0/m_axis_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins axis_data_fifo_1/s_axis_aresetn] [get_bd_pins axis_encoder_0/axis_aresetn] [get_bd_pins axis_monitor_0/axis_aresetn] [get_bd_pins axis_pwm_0/s_axis_aresetn] [get_bd_pins capture_axi_PYNQ/axi_aresetn] [get_bd_pins control_axi_block/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins ps7_0_axi_periph/M00_ARESETN] [get_bd_pins ps7_0_axi_periph/M01_ARESETN] [get_bd_pins ps7_0_axi_periph/M02_ARESETN] [get_bd_pins ps7_0_axi_periph/S00_ARESETN] [get_bd_pins system_ila_0/resetn]
   connect_bd_net -net proc_sys_reset_0_peripheral_reset [get_bd_pins fit_timer_0/Rst] [get_bd_pins proc_sys_reset_0/peripheral_reset]
