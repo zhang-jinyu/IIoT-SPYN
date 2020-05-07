@@ -49,8 +49,10 @@ Step 3: Use the following command in a terminal to install IIoT-SPYN
 ```bash
 $ sudo pip3 install --upgrade git+https://github.com/zhang-jinyu/IIoT-SPYN.git
 $ sudo reboot now
+or copy all files to your pynq board and
+```console
+sudo pip3 install -e .
 ```
-
 After the setup, new Jupyter notebooks will be added under the spyn folder, ready to try out, no additional steps are needed.
 
 
