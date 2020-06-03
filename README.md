@@ -40,11 +40,24 @@ $ sudo reboot now
 ```
 ## Quick Start for ZedBoard
 
-Step 1: Download the [**PYNQ-ZedBoard-2.5**]
+Step 1: Download the [**PYNQ-ZedBoard-2.5**](https://stunepueducn-my.sharepoint.com/:u:/g/personal/jinyu_stu_nepu_edu_cn/Ee79nghMgUxOg8N3OpJJwWEB5zDrGHsQCKBzeaiGemgSOw?e=ocmtXE)
 
 Step 2: Write the image file to a SD card
 
-Step 3: Use the following command in a terminal to install IIoT-SPYN
+Step 3: Insert your SD card to your zedboard and Power on it.connect your zedboard via ssh. Use the following command to config the eth0
+```bash
+$ vi /etc/network/interfaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ auto eth0
+ iface eth0 inet static
+ pre-up ifconfig eth0 hw ether XX:XX:XX:XX:XX:XX
+ address 192.168.2.99
+ netmask 255.255.255.0
+ gateway 192.168.2.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+Step 4: Use the following command in a terminal to install IIoT-SPYN
 
 ```bash
 $ sudo pip3 install --upgrade git+https://github.com/zhang-jinyu/IIoT-SPYN.git
