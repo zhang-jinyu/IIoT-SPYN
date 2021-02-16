@@ -1,7 +1,7 @@
 # 基于FPGA的PMSM模型预测控制算法加速
 - a 2021_CN_WinterCamp project：
 
-  使用HLS工具对FCS-MPC算法加速 ，并在Zedboard和EDDP平台上进行验证。
+  学习使用HLS工具对FCS-MPC算法加速 ，并在Zedboard和EDDP平台上进行验证。
 ***
 
 ##  1.1. 项目介绍
@@ -12,7 +12,7 @@
   $$ \frac{d i_{d}(t)}{d t}=\frac{1}{L_{d}}\left(v_{d}(t)-R i_{d}(t)+\omega_{e}(t) L_{q} i_{q}(t)\right)$$(1)
 
   $$\frac{d i_{q}(t)}{d t}=\frac{1}{L_{q}}\left(v_{q}(t)-R i_{q}(t)-\omega_{e}(t) L_{d} i_{d}(t)-\omega_{e}(t) \phi_{m g}\right)$$(2)
-  在t<sub>i</sub>时刻，取时间间隔$\Delta$<sub>t</sub>使：
+  在$t_{i}$时刻，取时间间隔$\Delta$<sub>t</sub>使：
   $$
   \frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i}\right)}{\Delta t}
   $$(3)
@@ -26,7 +26,9 @@
   $$
   i_{q}\left(t_{i+1}\right)=i_{q}\left(t_{i}\right)+\frac{\Delta t}{L_{q}}\left(v_{q}\left(t_{i}\right)-R i_{q}\left(t_{i}\right)-\omega_{e}\left(t_{i}\right) L_{d} i_{d}\left(t_{i}\right)-\omega_{e}\left(t_{i}\right) \phi_{m g}\right)
   $$(6)
-  为了便于编程，可将(5)、(6)改写成下式形式：
+
+  为了便于编程实现，将(5)、(6)改写成下式形式：
+
   $$
   \left[\begin{array}{c}
   i_{d}\left(t_{i+1}\right) \\
@@ -42,8 +44,21 @@
   v_{q}\left(t_{i}\right)
   \end{array}\right]
   $$(7)
-  
 
+  其中
+
+  $$
+  A_{m}\left(t_{i}\right)=\left[\begin{array}{cc}
+  -\frac{R_{s}}{L_{d}} & \frac{\omega_{e}\left(t_{i}\right) L_{q}}{L_{d}} \\
+  -\frac{\omega_{e}\left(t_{i}\right) L_{d}}{L_{q}} & -\frac{R_{s}}{L_{q}}
+  \end{array}\right]
+  $$
+  $$
+  B_{m}=\left[\begin{array}{cc}
+  \frac{1}{L_{d}} & 0 \\
+  0 & \frac{1}{L_{q}}
+  \end{array}\right]
+  $$
 
   ### 1.1.2. 基于xilinx zynq的PMSM模型预测控制器设计流程
 
