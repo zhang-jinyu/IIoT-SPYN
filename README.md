@@ -9,7 +9,7 @@
 
 ### 1.1 FCS-MPC算法原理
 
-### 1.2 基于xilinx zynq的PMSM模型预测控制设计流程
+### 1.2 基于xilinx zynq的PMSM模型预测控制器设计流程
 
 ## 2 目前已完成的工作
 
