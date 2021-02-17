@@ -70,6 +70,19 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
 
 
 ### 1.1.2. 延迟补偿
+  在非理想情况下，存在如下几种延迟：
+  - Measurement delay:在EDDP中，该部分延迟主要由sinc3 filter引起，不同的抽取率引起的延迟如下表所示：
+  
+  Decimation Ratio(R)|Throught Rate(KHZ) | Effective Number of bit(ENOB) | Filter Delay
+  :---:|:---:|:---:|:---:
+  256|78.1|12|12.8
+  128|156.2|11|6.4
+  32 | 625 |9 |1.6
+
+  - Uplink communication delay:
+  - Computation delay:
+  - Downlink delay:
+  - Actuation delay:
 
 ### 1.1.3. 基于xilinx zynq的PMSM模型预测控制器设计流程
 ## 1.2. 目前已完成的工作
