@@ -103,7 +103,7 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
 
 ### 1.1.3. 基于xilinx zynq的PMSM模型预测控制器设计流程
   模型预测控制算法的实现主要是在Vivado HLS和Vivado两个EDA设计工具中完成。首先由Vivado HLS部分完成模型预测控制算法部分进行加速，该部分完成的是实现C++高级语言到寄存器级硬件描述语言（Verilog）的转化，并将其封装成后续可进行图形化模块设计的IP核；然后在Vivado设计套件中完成矢量控制的基于IP核的模块化设计（Block Design）进而完成寄存器传输级（RTL）到比特流的FPGA设计。基于HLS的模型预测控制算法设计流程如下图所示。
-  ![模型预测控制算法设计流程]()
+  ![模型预测控制算法设计流程](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E6%8E%A7%E5%88%B6%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E6%B5%81%E7%A8%8B.png)
 
 ## 1.2. 目前已完成的工作
 
