@@ -71,18 +71,20 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
 
 ### 1.1.2. 延迟补偿
   在非理想情况下，存在如下几种延迟：
-  - Measurement delay:在EDDP中，该部分延迟主要由sinc3 filter引起，不同的抽取率引起的延迟如下表所示：
+  - Measurement delay:在EDDP中，该部分延迟主要由sinc3 filter引起，当ad7403的驱动时钟为20MHZ时，不同的抽取率引起的延迟如下表所示：
   
-  Decimation Ratio(R)|Throught Rate(KHZ) | Effective Number of bit(ENOB) | Filter Delay
-  :---:|:---:|:---:|:---:
-  256|78.1|12|12.8
-  128|156.2|11|6.4
-  32 | 625 |9 |1.6
+  | Decimation Ratio(R) | Throught Rate(KHZ) | Effective Number of bit(ENOB) | Filter Delay(us) |
+  | :-----------------: | :----------------: | :---------------------------: | :--------------: |
+  |         256         |        78.1        |              12               |       12.8       |
+  |         128         |       156.2        |              11               |       6.4        |
+  |         32          |        625         |               9               |       1.6        |
+  
+  由上表可知电流采样信号链延迟最低为1.6微秒。
+  - Uplink communication delay:上行通信延迟
+  - Computation delay:计算延迟，该部分延迟主要由计算单元引起，未经HLS加速的MPC算法计算延迟为584us。
+  - Downlink delay:下行通信延迟，MPC求解出的最优开关位置信号后经过SN74LVC1G97DCK/ADUM4224触发MOSFET动作引起的延迟。查询datasheet可得该部分延迟在200ns以下。
+  通信和计算延迟通常为最重要的延迟。在数字控制器中，通常需要对延迟进行补偿。
 
-  - Uplink communication delay:
-  - Computation delay:
-  - Downlink delay:
-  - Actuation delay:
 
 ### 1.1.3. 基于xilinx zynq的PMSM模型预测控制器设计流程
 ## 1.2. 目前已完成的工作
