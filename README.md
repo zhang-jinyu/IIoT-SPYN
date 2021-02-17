@@ -80,10 +80,11 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
   |         32          |        625         |               9               |       1.6        |
   
   由上表可知电流采样信号链延迟最低为1.6微秒。
-  - Uplink communication delay:上行通信延迟
+  - Uplink communication delay:上行链路延迟，指测量结果传递至MPC计算单元的延迟，该部分延迟主要由clark变换IP核、park变换IP核引起。
   - Computation delay:计算延迟，该部分延迟主要由计算单元引起，未经HLS加速的MPC算法计算延迟为584us。
-  - Downlink delay:下行通信延迟，MPC求解出的最优开关位置信号后经过SN74LVC1G97DCK/ADUM4224触发MOSFET动作引起的延迟。查询datasheet可得该部分延迟在200ns以下。
-  通信和计算延迟通常为最重要的延迟。在数字控制器中，通常需要对延迟进行补偿。
+  - Downlink delay:下行链路延迟，MPC求解出的最优开关位置信号后经过SN74LVC1G97DCK/ADUM4224触发MOSFET动作引起的延迟。查询datasheet可得该部分延迟在200ns以下。
+  通信和计算延迟通常为最重要的延迟。在数字控制器中，通常需要对延迟进行补偿。下图中U和D分别表示上行通信延迟和下行通信延迟，C表示MPC计算单元延迟。垂直箭头表示测量采样和开关实际作用的时间点。
+  ！[图1.1未补偿前采样计算作用点]()
 
 
 ### 1.1.3. 基于xilinx zynq的PMSM模型预测控制器设计流程
