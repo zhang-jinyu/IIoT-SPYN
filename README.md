@@ -8,6 +8,7 @@
 
 ### 1.1.1. FCS-MPC算法基本原理
   根据控制量的不同, FCS-MPC可分为电流模型预测控制(MPCC)和转矩模型预测控制( MPTC). MPTC不但需要对转矩和磁链进行估测，还需要平衡转矩和磁链之间的控制性能，在价值函数中设置合适的加权因子，使MPTC灵活性受到影响。MPCC不需要对转矩和磁链进行估算和预测，计算量较小，可以通过提高采样频率或者增加预测步长提高系统性能. 本项目关注于单步电流模型预测控制算法的加速.
+
   d-q旋转坐标系永磁同步电机动态数学模型如下式所示：
   $$ \frac{d i_{d}(t)}{d t}=\frac{1}{L_{d}}\left(v_{d}(t)-R i_{d}(t)+\omega_{e}(t) L_{q} i_{q}(t)\right)\tag{1}$$
 
@@ -84,8 +85,21 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
   - Computation delay:计算延迟，该部分延迟主要由计算单元引起，未经HLS加速的MPC算法计算延迟为584us。
   - Downlink delay:下行链路延迟，MPC求解出的最优开关位置信号后经过SN74LVC1G97DCK/ADUM4224触发MOSFET动作引起的延迟。查询datasheet可得该部分延迟在200ns以下。
   通信和计算延迟通常为最重要的延迟。在数字控制器中，通常需要对延迟进行补偿。下图中U和D分别表示上行通信延迟和下行通信延迟，C表示MPC计算单元延迟。垂直箭头表示测量采样和开关实际作用的时间点。
-  ![图1.1未补偿前采样计算作用点](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E6%9C%AA%E8%A1%A5%E5%81%BF%E5%BB%B6%E8%BF%9F%E7%9A%84%E6%83%85%E5%86%B5.png)
+  ![图1.1 未补偿延迟的模型预测控制算法](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E6%9C%AA%E8%A1%A5%E5%81%BF%E5%BB%B6%E8%BF%9F%E7%9A%84%E6%83%85%E5%86%B5.png)
+  
+  未补偿前，由于延迟时间的存在，使得本应在第k时刻作用于功率器件的开关组合U(K,K)却在第K+1时刻才作用于功率器件。这种开关位置作用时间的滞后，增加了电流纹波，降低了模型预测控制的闭环性能。为此，数字电路中，通常会引入额外的预测步长对延迟进行补偿。即，使用第k-1步的电流$i_{s}(k-1)$以及作用于k-1步的开关位置$U(k-1|k-2)$预测第k步的电流。
+  $$
+  \boldsymbol{i}_{s}(k \mid k-1)=\boldsymbol{A} \boldsymbol{i}_{s}(k-1)+\boldsymbol{B} \boldsymbol{u}(k-1 \mid k-2)
+  \tag{9}$$
+  根据上式，为模型预测算法增加额外的初始状态预测，具体预测步骤如下所示：
 
+  0. 完成对第K-1步定子电流采样，并使用式9计算第k步的电流值$i_{s}(k|k-1)$.
+  1. 进一步缩小第K步开关位置$U(K|K-1)$的开关位置范围。
+  2. 对于候选$u(k|k-1)$使用式(8)计算J。
+  3. 将对应最小价值函数$J_{min}$的$u_{opt}(k|k-1)$作用于逆变器。
+  
+  经延迟补偿的模型预测算法计算过程如下图所示：
+  ![图1.2 延迟补偿模型预测算法](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E5%A2%9E%E5%8A%A0%E5%BB%B6%E8%BF%9F%E8%A1%A5%E5%81%BF.png)
 
 ### 1.1.3. 基于xilinx zynq的PMSM模型预测控制器设计流程
 ## 1.2. 目前已完成的工作
