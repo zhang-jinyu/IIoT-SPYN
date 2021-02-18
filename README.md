@@ -4,9 +4,7 @@
   学习使用HLS工具对FCS-MPC算法加速 ，并在Zedboard和EDDP平台上进行验证。
 ***
 
-##  1.1. 项目介绍
-
-### 1.1.1. FCS-MPC算法基本原理
+##  1.1. FCS-MPC算法基本原理
   根据控制量的不同, FCS-MPC可分为电流模型预测控制(MPCC)和转矩模型预测控制( MPTC). MPTC不但需要对转矩和磁链进行估测，还需要平衡转矩和磁链之间的控制性能，在价值函数中设置合适的加权因子，使MPTC灵活性受到影响。MPCC不需要对转矩和磁链进行估算和预测，计算量较小，可以通过提高采样频率或者增加预测步长提高系统性能. 本项目关注于单步电流模型预测控制算法的加速.
 
   d-q旋转坐标系永磁同步电机动态数学模型如下式所示：
@@ -16,7 +14,7 @@
 
   在$t_{i}$时刻，取时间间隔$\Delta$<sub>t</sub>使：
   
-$$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i}\right)}{\Delta t}\tag{3}$$
+  $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i}\right)}{\Delta t}\tag{3}$$
 
   $$
   \frac{d i_{q}(t)}{d t} \approx \frac{i_{q}\left(t_{i+1}\right)-i_{q}\left(t_{i}\right)}{\Delta t}
@@ -70,7 +68,7 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
   \tag{8}$$
 
 
-### 1.1.2. 延迟补偿
+## 1.2. 延迟补偿及算法实现流程
   在非理想情况下，存在如下几种延迟：
   - Measurement delay:在EDDP中，该部分延迟主要由sinc3 filter引起，当ad7403的驱动时钟为20MHZ时，不同的抽取率引起的延迟如下表所示：
   
@@ -101,9 +99,20 @@ $$\frac{d i_{d}(t)}{d t} \approx \frac{i_{d}\left(t_{i+1}\right)-i_{d}\left(t_{i
   经延迟补偿的模型预测算法计算过程如下图所示：
   ![图1.2 延迟补偿模型预测算法](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E5%A2%9E%E5%8A%A0%E5%BB%B6%E8%BF%9F%E8%A1%A5%E5%81%BF.png)
 
-### 1.1.3. 基于xilinx zynq的PMSM模型预测控制器设计流程
+## 1.3. 基于Vivado HLS的FCS-MPC算法加速
   模型预测控制算法的实现主要是在Vivado HLS和Vivado两个EDA设计工具中完成。首先由Vivado HLS部分完成模型预测控制算法部分进行加速，该部分完成的是实现C++高级语言到寄存器级硬件描述语言（Verilog）的转化，并将其封装成后续可进行图形化模块设计的IP核；然后在Vivado设计套件中完成矢量控制的基于IP核的模块化设计（Block Design）进而完成寄存器传输级（RTL）到比特流的FPGA设计。基于HLS的模型预测控制算法设计流程如下图所示。
   ![模型预测控制算法设计流程](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E6%8E%A7%E5%88%B6%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E6%B5%81%E7%A8%8B.png)
+  
+  使用Vivado HLS对FCS-MPC算法加速分为如下步骤：
+  1. Initial Optimizations:初始优化，该部分的主要任务为定义接口
+  2. Pipline for Performance：对loop和function进行流水线化处理，尽可能多的对数据进行并行处理，提升性能。
+  3. Optimize Structures：优化结构，对RAM和port进行partition；清除错误依存关系。
+  4. Reduce Latency：缩短时延
+  5. Improve Area：改善面积，通过复用硬件资源来改善面积占用。
+### 1.3.1. Initial Optimizqations
+  
+
+
 
 ## 1.2. 目前已完成的工作
 
