@@ -71,13 +71,14 @@
 ## 1.2. 延迟补偿及算法实现流程
   在非理想情况下，存在如下几种延迟：
   - Measurement delay:在EDDP中，该部分延迟主要由sinc3 filter引起，当ad7403的驱动时钟为20MHZ时，不同的抽取率引起的延迟如下表所示：
+  <center>
   
   | Decimation Ratio(R) | Throught Rate(KHZ) | Effective Number of bit(ENOB) | Filter Delay(us) |
   | :-----------------: | :----------------: | :---------------------------: | :--------------: |
   |         256         |        78.1        |              12               |       12.8       |
   |         128         |       156.2        |              11               |       6.4        |
   |         32          |        625         |               9               |       1.6        |
-  
+  </center>
   由上表可知电流采样信号链延迟最低为1.6微秒。
   - Uplink communication delay:上行链路延迟，指测量结果传递至MPC计算单元的延迟，该部分延迟主要由clark变换IP核、park变换IP核引起。
   - Computation delay:计算延迟，该部分延迟主要由计算单元引起，未经HLS加速的MPC算法计算延迟为584us。
@@ -143,7 +144,7 @@
   4. Memory Interface Protocol
   5. Bus Protocol
 
-对FCS-MPC算法不使用任何directive，综合后，HLS工具会为FCS-MPC Block默认设置**ap_control_hs**Block_Level_Protocol，对于输入输出默认设置ap_none协议，对于输出端口默认设置ap_vld协议，使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
+实际HLS项目工程中，对于**Block Level Protocol**部分的INTERFACE，不使用任何directive，综合后，HLS工具会为FCS-MPC Block缺省设置为**ap_control_hs**接口协议，对于输入端口缺省设置为ap_none协议，对于输出端口设置为ap_vld协议，使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
 <center>
 
 ![图1.4 FCS-MPC算法初步综合后的interface summary](picture/original_synthsis_block_level_protocol.png)
@@ -153,13 +154,24 @@
 
 ![图1.5 FCS-MPC算法原始延迟](picture/original_systhsis/original_clock_latency(cycles).png)
 </center>
-上板运行后，使用ILA测试BLOCK LEVEL PROTOCOL协议控制信号，FCS-MPC模块能正常工作，即自ap_start高电平至ap_done高电平的下一时钟周期止，FCS-MPC未加速前实际计算延迟为5.85us(1899-2484=585 cycle),如下图所示：
+上板运行后，使用ILA测试BLOCK LEVEL PROTOCOL协议控制信号，FCS-MPC模块正常工作。未使用HLS加速前，FCS-MPC计算模块运行一个周期，即自ap_start高电平至ap_done高电平的下一时钟周期止，实际计算延迟为5.85us(1899-2484=585 cycle(100MHZ)),如下图所示：
 <center>
 
 ![图1.5 未加速的FCS-MPC算法实际延迟](picture/block_level_protocol/ila/original_signal/block_level_protocol_origin_signal.png)
 </center>
 
+实际HLS项目工程中,对于Port Level Protocol部分的INTERFACE使用axisream协议接口，具体directive设置如下所示：
+```
+set_directive_interface -mode axis -register -register_mode both "FCSMPC" angle
+set_directive_interface -mode axis -register -register_mode both "FCSMPC" RPM
+set_directive_interface -mode axis -register -register_mode both "FCSMPC" iq_m
+set_directive_interface -mode axis -register -register_mode both "FCSMPC" id_m
+```
+使用vivado_hls对FCS-MPC使用上述Directive综合后的Interface Summary如下图所示：
+<center>
 
+![axisream初步综合](picture/Port_level_Protocol/Port_level_Protocol.png)
+</center>
 
 ### 1.3.2. Pipline for Performance 
 
