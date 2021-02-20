@@ -101,7 +101,7 @@
 
 ## 1.3. 基于Vivado HLS的FCS-MPC算法加速
   模型预测控制算法的实现主要是在Vivado HLS和Vivado两个EDA设计工具中完成。首先由Vivado HLS部分完成模型预测控制算法部分进行加速，该部分完成的是实现C++高级语言到寄存器级硬件描述语言（Verilog）的转化，并将其封装成后续可进行图形化模块设计的IP核；然后在Vivado设计套件中完成矢量控制的基于IP核的模块化设计（Block Design）进而完成寄存器传输级（RTL）到比特流的FPGA设计。基于HLS的模型预测控制算法设计流程如下图所示。
-  ![模型预测控制算法设计流程](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E6%8E%A7%E5%88%B6%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E6%B5%81%E7%A8%8B.png)
+  ![图1.3 模型预测控制算法设计流程](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E6%8E%A7%E5%88%B6%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E6%B5%81%E7%A8%8B.png)
   
   使用Vivado HLS对FCS-MPC算法加速分为如下步骤：
   1. Initial Optimizations:初始优化，该部分的主要任务为定义接口
@@ -109,19 +109,21 @@
   3. Optimize Structures：优化结构，对RAM和port进行partition；清除错误依存关系。
   4. Reduce Latency：缩短时延
   5. Improve Area：改善面积，通过复用硬件资源来改善面积占用。
-### 1.3.1. Initial Optimizqations
+### 1.3.1. Initial Optimizations
   对算法进行仿真验证和综合完成之后，接下来首先要做的工作是定义接口。接口是指为顶层函数实参指定I/O协议。Vivado HLS支持两种接口协议：**Block Level Protocol**和**Port Level Protocol**。
 
-- **Block Level I/O Protocol** 该接口协议主要是为HLS block生成握手信号和控制信号。**Block Level Protocol**包含**ap_control_none** 、**ap_control_hs** 、**ap_control_chain**三种类型接口协议，其中ap_control_hs为默认设置。
+  - **Block Level I/O Protocol** 该接口协议主要是为HLS block生成握手信号和控制信号。**Block Level Protocol**包含**ap_control_none** 、**ap_control_hs** 、**ap_control_chain**三种类型接口协议，其中ap_control_hs为默认设置。
+
   
-  1. **ap_control_hs** 该接口协议通常包含如下接口信号：
-     - **ap_start** 表示该功能模块何时开始处理数据
-     - **ap_idle** 表示该功能模块何时处于空闲状态
-     - **ap_done** 表示是否已经完成特定运算功能
-     - **ap_ready** 表示何时该功能模块能够接收新的输入数据。
+    1. **ap_control_hs** 该接口协议通常包含如下接口信号：
+        - **ap_start** 表示该功能模块何时开始处理数据
+        - **ap_idle** 表示该功能模块何时处于空闲状态
+        - **ap_done** 表示是否已经完成特定运算功能
+        - **ap_ready** 表示何时该功能模块能够接收新的输入数据。
   
-  2. **ap_control_chain** 该接口协议与ap_control_hs相似，只比ap_control_hs多一个ap_continue输入信号。当ap_continue信号为低电平时，表示下级block未准备就绪接收新的数据；暂停向下级bolck传输新的数据。
-  3. **ap_control_none** 对接口应用该协议类型时，不会产生任何与该接口相关的控制信号。
+    2. **ap_control_chain** 该接口协议与ap_control_hs相似，只比ap_control_hs多一个ap_continue输入信号。当ap_continue信号为低电平时，表示下级block未准备就绪接收新的数据；暂停向下级bolck传输新的数据。
+    3. **ap_control_none** 对接口应用该协议类型时，不会产生任何与该接口相关的控制信号。
+  
 
 - **Port Level I/O Protocol** 当使用Block level protocol对block实现控制之后，需要使用Port Level Protocol实现Block的数据传输。Port Level Protocol 包含：
   1.  AXI4 Interface Protocol
@@ -132,6 +134,11 @@
   3. Wire Handshake Protocol
   4. Memory Interface Protocol
   5. Bus Protocol
+
+对FCS-MPC算法不使用任何directive，综合后，HLS工具会为FCS-MPC Block默认设置**ap_control_hs**Block_Level_Protocol，对于输入输出默认设置ap_none协议，对于输出端口默认设置ap_vld协议，使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
+![FCS-MPC算法初步综合后的interface summary]()
+
+
 ### 1.3.2. Pipline for Performance 
 
 ### 1.3.3. Optimize Structures
