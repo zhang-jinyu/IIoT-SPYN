@@ -1,4 +1,4 @@
-# 基于FPGA的PMSM模型预测控制算法加速
+# 1. 基于FPGA的PMSM模型预测控制算法加速
 - a 2021_CN_WinterCamp project：
 
   学习使用HLS工具对FCS-MPC算法加速 ，并在Zedboard和EDDP平台上进行验证。
@@ -110,20 +110,49 @@
   4. Reduce Latency：缩短时延
   5. Improve Area：改善面积，通过复用硬件资源来改善面积占用。
 ### 1.3.1. Initial Optimizqations
+  对算法进行仿真验证和综合完成之后，接下来首先要做的工作是定义接口。接口是指为顶层函数实参指定I/O协议。Vivado HLS支持两种接口协议：**Block Level Protocol**和**Port Level Protocol**。
+
+- **Block Level I/O Protocol** 该接口协议主要是为HLS block生成握手信号和控制信号。**Block Level Protocol**包含**ap_control_none** 、**ap_control_hs** 、**ap_control_chain**三种类型接口协议，其中ap_control_hs为默认设置。
+  
+  1. **ap_control_hs** 该接口协议通常包含如下接口信号：
+     - **ap_start** 表示该功能模块何时开始处理数据
+     - **ap_idle** 表示该功能模块何时处于空闲状态
+     - **ap_done** 表示是否已经完成特定运算功能
+     - **ap_ready** 表示何时该功能模块能够接收新的输入数据。
+  
+  2. **ap_control_chain** 该接口协议与ap_control_hs相似，只比ap_control_hs多一个ap_continue输入信号。当ap_continue信号为低电平时，表示下级block未准备就绪接收新的数据；暂停向下级bolck传输新的数据。
+  3. **ap_control_none** 对接口应用该协议类型时，不会产生任何与该接口相关的控制信号。
+
+- **Port Level I/O Protocol** 当使用Block level protocol对block实现控制之后，需要使用Port Level Protocol实现Block的数据传输。Port Level Protocol 包含：
+  1.  AXI4 Interface Protocol
+        - AXI4-Lite Interfaces(**s_axilite**)
+        - AXI4-Master Interfaces(**m_axi**)
+        - AXI4-Stream Interfaces(**axis**)
+  2. No I/O Protocol
+  3. Wire Handshake Protocol
+  4. Memory Interface Protocol
+  5. Bus Protocol
+### 1.3.2. Pipline for Performance 
+
+### 1.3.3. Optimize Structures
+
+### 1.3.4. Reduce Latency
+
+### 1.3.5. Improve Area
   
 
 
 
-## 1.2. 目前已完成的工作
+##  目前已完成的工作
 
-  ### 1.2.1. 修正电流采样信号链
+  ###  修正电流采样信号链
 
-  ### 1.2.2. 转子转速位置信号链改进
+  ###  转子转速位置信号链改进
 
-  ### 1.2.3. 模型预测控制的延迟补偿修正
+  ###  模型预测控制的延迟补偿修正
 
 
 
-## 1.3. 目前仍需解决的问题
+##  目前仍需解决的问题
 
-### 1.3.1. 解决过流导致的ap_start仅能保持一个时钟周期的问题
+###  解决过流导致的ap_start仅能保持一个时钟周期的问题
