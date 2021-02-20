@@ -136,7 +136,7 @@
   5. Bus Protocol
 
 对FCS-MPC算法不使用任何directive，综合后，HLS工具会为FCS-MPC Block默认设置**ap_control_hs**Block_Level_Protocol，对于输入输出默认设置ap_none协议，对于输出端口默认设置ap_vld协议，使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
-![FCS-MPC算法初步综合后的interface summary]()
+![图1.4 FCS-MPC算法初步综合后的interface summary](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/original_synthsis_block_level_protocol.png)
 
 
 ### 1.3.2. Pipline for Performance 
