@@ -136,10 +136,14 @@
   5. Bus Protocol
 
 对FCS-MPC算法不使用任何directive，综合后，HLS工具会为FCS-MPC Block默认设置**ap_control_hs**Block_Level_Protocol，对于输入输出默认设置ap_none协议，对于输出端口默认设置ap_vld协议，使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
-![图1.4 FCS-MPC算法初步综合后的interface summary](https://github.com/zhang-jinyu/IIoT-SPYN/blob/2021_CN_WinterCamp/picture/original_synthsis_block_level_protocol.png)
+![图1.4 FCS-MPC算法初步综合后的interface summary](picture/original_synthsis_block_level_protocol.png)
 
-综合后的clock latency为586个时钟周期（100MHZ时钟，实际延迟为5.86us），如下图所示：
+综合后的clock latency为585个时钟周期（100MHZ时钟，实际延迟为5.85us），如下图所示：
 ![图1.5 FCS-MPC算法原始延迟](picture/original_systhsis/original_clock_latency(cycles).png)
+
+上板运行后，使用ILA测试BLOCK LEVEL PROTOCOL协议控制信号，FCS-MPC模块能正常工作，即自ap_start高电平至ap_done高电平的下一时钟周期止，FCS-MPC未加速前实际计算延迟为5.85us(1899-2484=585 cycle),如下图所示：
+![图1.5 未加速的FCS-MPC算法实际延迟](picture/block_level_protocol/ila/original_signal/block_level_protocol_origin_signal.png)
+
 
 
 
