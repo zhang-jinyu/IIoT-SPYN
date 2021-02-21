@@ -1,4 +1,4 @@
-# 1. 基于FPGA的PMSM模型预测控制算法加速
+# 1. 基于Vivado HLS的PMSM模型预测控制算法加速
 - a 2021_CN_WinterCamp project：
 
   学习使用HLS工具对FCS-MPC算法加速 ，并在Zedboard和EDDP平台上进行验证。
@@ -144,7 +144,7 @@
   4. Memory Interface Protocol
   5. Bus Protocol
 
-实际HLS项目工程中，对于**Block Level Protocol**部分的INTERFACE不使用任何Directive，综合后，HLS工具会为FCS-MPC Block缺省设置为**ap_control_hs**接口协议，对于输入端口缺省设置为**ap_none**协议，对于输出端口设置为**ap_vld**协议。使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
+实际HLS项目工程中，对于**Block Level Protocol**部分的INTERFACE不使用任何Directive，综合后，HLS工具会为FCS-MPC Block缺省设置为**ap_control_hs**接口协议，对于输入端口缺省设置为**ap_none**协议，对于输出端口设置为**ap_vld**协议。故删除原设计中block level protocol部分所有directive，并使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
 <center>
 
 ![图1.4 FCS-MPC算法初步综合后的interface summary](picture/original_synthsis_block_level_protocol.png)
@@ -160,20 +160,97 @@
 ![图1.5 未加速的FCS-MPC算法实际延迟](picture/block_level_protocol/ila/original_signal/block_level_protocol_origin_signal.png)
 </center>
 
-实际HLS项目工程中,对于Port Level Protocol部分的INTERFACE使用axisream协议接口，具体directive设置如下所示：
+原设计中FCS-MPC IP核只用了port level protocol，本设计使用axisream协议传输数据。原设计的.h文件中FCSMPC声明如下：
 ```
-set_directive_interface -mode axis -register -register_mode both "FCSMPC" angle
-set_directive_interface -mode axis -register -register_mode both "FCSMPC" RPM
-set_directive_interface -mode axis -register -register_mode both "FCSMPC" iq_m
-set_directive_interface -mode axis -register -register_mode both "FCSMPC" id_m
+void FCSMPC(float R_over_L,				// quotient of phase resistance over phase inductance
+			float one_over_L,			// inverse of the phase inductance
+			float sampling_period,		// the sampling period of the synthesized FCSMPC Code
+			uint16_t lm_over_c_i_sqr ,	// lamda_u divided by the conversion factor c_i squared
+			int16_t	angle,				// angle of the motor in encoder steps (0 ... 999)
+			int16_t	RPM,				// speed of the motor in rpm
+			int16_t id_m,				// d component of the measured current
+			int16_t	iq_m,				// q component of the measured current
+			int16_t id_SP, 				// set point of the d component of the current
+			int16_t iq_SP,				// set point of the q component of the current
+			ap_int<3> *GH, 				// inverted Gate signals for the high side (bit layout 0bCBA)
+			ap_int<3> *GL,				// inverted Gate signals for the low side (bit layout 0bCBA)
+			int16_t *id_exp, 			// Output for debug purpose - what does the MPC predict
+			int16_t *iq_exp);         // Output for debug purpose - what does the MPC predict)
 ```
-使用vivado_hls对FCS-MPC使用上述Directive综合后的Interface Summary如下图所示：
+添加HLS默认库hls_stream.h，并将上述声明的四个16位输入接口**angle**、**RPM**、**id_m**、**iq_m**整合为64位axis，做如下修改：
+```
+void FCSMPC(float R_over_L,				// quotient of phase resistance over phase inductance
+			float one_over_L,			// inverse of the phase inductance
+			float sampling_period,		// the sampling period of the synthesized FCSMPC Code
+			uint16_t lm_over_c_i_sqr ,	// lamda_u divided by the conversion factor c_i squared
+			hls::stream<int64_t> &s_axis,
+			int16_t id_SP, 				// set point of the d component of the current
+			int16_t iq_SP,				// set point of the q component of the current
+			ap_int<3> *GH, 				// inverted Gate signals for the high side (bit layout 0bCBA)
+			ap_int<3> *GL,				// inverted Gate signals for the low side (bit layout 0bCBA)
+			int16_t *id_exp, 			// Output for debug purpose - what does the MPC predict
+			int16_t *iq_exp
+```
+对FCSMPC.cpp文件做如下修改：
+```
+void FCSMPC(
+      float R_over_L,				// quotient of phase resistance over phase inductance
+			float one_over_L,			// inverse of the phase inductance
+			float sampling_period,		// the sampling period of the synthesized FCSMPC Code
+			uint16_t lm_over_c_i_sqr ,	// lamda_u divided by the conversion factor c_i squared
+			hls::stream<int64_t> &s_axis,
+			int16_t id_SP, 				// set point of the d component of the current
+			int16_t iq_SP,				// set point of the q component of the current
+			ap_int<3> *GH, 				// inverted Gate signals for the high side (bit layout 0bCBA)
+			ap_int<3> *GL,				// inverted Gate signals for the low side (bit layout 0bCBA)
+			int16_t *id_exp, 			// Output for debug purpose - what does the MPC predict
+			int16_t *iq_exp){// Output for debug purpose - MPC prediction (conversion factor c_i applied)
+
+	    int64_t in_data;
+	    int16_t	angle;				// angle of the motor in encoder steps (0 ... 999)
+	    int16_t	RPM;			// speed of the motor in rpm
+	    int16_t id_m;				// d component of the measured current (conversion factor c_i applied)
+	    int16_t	iq_m;				// q component of the measured current (conversion factor c_i applied)
+
+	    in_data =s_axis.read();
+    	id_m  = int16_t(in_data & 0xFFFF);
+    	iq_m  = int16_t(in_data >> 16 & 0xFFFF );
+    	RPM   = int16_t(in_data >> 32 & 0xFFFF );
+      angle = int16_t(in_data >> 48 & 0xFFFF );
+```
+删除原directive，并做如下修改：
+```
+set_directive_interface -mode axis -register_mode off "FCSMPC" s_axis
+```
+对testbench.cpp部分做如下更改：
+```
+#include "FCSMPC_2.0.h"
+
+int main(){
+	ap_int<3> GH, GL;
+	hls::stream<int64_t> inputStream;
+	int64_t in_data;
+	int16_t id_exp, iq_exp;
+	int16_t id_in[] = {0,5,5,16,0,18,18,9,-13,-25,-27,-30,-17,-5,15},
+			iq_in[] = {0,0,0,0,0,0,90,129,141,116,131,117,108,93,84},
+			RPM[]   = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+			angle[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+	for(int idx = 0; idx < 15; idx++){
+		in_data = (int64_t(id_in[idx]) & 0x0000FFFF) | ((int64_t(iq_in[idx]) << 16 ) & 0xFFFF0000) |((int64_t(RPM[idx]) << 32) & 0xFFFF00000000) | ((int64_t(RPM[idx]) << 48) & 0xFFFF000000000000);
+		inputStream << in_data;
+```
+对FCS-MPC综合后的Interface Summary如下图所示：
 <center>
 
-![axisream初步综合](picture/Port_level_Protocol/Port_level_Protocol.png)
+![axisream_bundle初步综合](picture/Port_level_Protocol/axisream_bundle.png)
 </center>
 
-从上图可以看出，csynthssis之后，angle RPM id_m iq_m输入接口已经综合为axisream接口，资源占用情况和FCS-MPC的计算延迟与默认情况基本一致。
+csynthssis之后，angle RPM id_m iq_m输入接口已经综合为axisream接口，资源占用情况和FCS-MPC的计算延迟与默认情况基本一致。
+
+至此，第一部分Initial Optimizations已经完成。该部分完成两个主要工作：
+1. 对输入输出接口进行了设置并添加控制信号(block level protocol)
+2. 将四个16位输入端口整合为64位输入端口，并修改原代码，将输入端口设置为使用axistream传输数据。(port level protocol)
 ### 1.3.2. Pipline for Performance 
 
 ### 1.3.3. Optimize Structures
