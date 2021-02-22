@@ -240,13 +240,13 @@ int main(){
 		in_data = (int64_t(id_in[idx]) & 0x0000FFFF) | ((int64_t(iq_in[idx]) << 16 ) & 0xFFFF0000) |((int64_t(RPM[idx]) << 32) & 0xFFFF00000000) | ((int64_t(RPM[idx]) << 48) & 0xFFFF000000000000);
 		inputStream << in_data;
 ```
-对FCS-MPC综合后的Interface Summary如下图所示：
+完成上述修改后，对FCS-MPC进行综合，Interface Summary如下图所示：
 <center>
 
 ![axisream_bundle初步综合](picture/Port_level_Protocol/axisream_bundle.png)
 </center>
 
-csynthssis之后，angle RPM id_m iq_m输入接口已经综合为axisream接口，资源占用情况和FCS-MPC的计算延迟与默认情况基本一致。
+csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经整合为一个s_axi接口，资源占用情况和FCS-MPC的计算延迟与默认情况基本一致。
 
 至此，第一部分Initial Optimizations已经完成。该部分完成两个主要工作：
 1. 对输入输出接口进行了设置并添加控制信号(block level protocol)
