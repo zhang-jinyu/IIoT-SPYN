@@ -252,9 +252,36 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 1. 对输入输出接口进行了设置并添加控制信号(block level protocol)
 2. 将四个16位输入端口整合为64位输入端口，并修改原代码，将输入端口设置为使用axistream传输数据。(port level protocol)
 ### 1.3.2. Pipline for Performance 
+  完成第一步定义接口后，接下来需要对function和loop进行流水线化设计。实现高性能设计的关键在于使用PIPELINE和 DATAFLOW Directive来对函数、循环进行流水线化。在不使用流水线化的情况下，操作会顺序执行直至函数完成，然后才能开始执行函数的下一步操作或下一项传输事务。使用流水线时，一旦硬件资源变为可用，下一项传输事务就会即刻启动。流水线设计原理如下图所示：
+  <center>
+
+  ![流水线行为](picture/pipline_for_performance/流水线行为.png)
+  </center>
+
+  PIPELINE 指令可用于函数或循环，这样即可以最小的面积开销提升吞吐量 （最大限度缩短 II）。函数和循环均被视为任务。 DATAFLOW 指令用于将任务“流水线”化，使其在数据依赖关系允许的情况下并行执行。通过对代码中的功能和循环进行流水线处理，可以使设计的性能最大化。可用于流水线的指令如下表所示：
+  |    指令和配置    |                                         描述                                         |
+  | :--------------: | :----------------------------------------------------------------------------------: |
+  |    INTERFACE     |                         指定如何根据函数描述创建 RTL 端口。                          |
+  |    DATA_PACK     |                    把结构体的数据字段打包到字宽更宽的单一标量中。                    |
+  |  LOOP_TRIPCOUNT  | 用于含变量边界的循环。提供估算的循环迭代计数。这对综合没有影响，只对报告功能有影响。 |
+  | Config Interface |  该配置用于控制与顶层函数实参无关联的 I/O 端口，支持从最终RTL 中去除未使用的端口。   |
+  在本阶段，应通过将PIPELINE指令应用于函数和循环，而对于包含函数和循环的顶层function使用DATAFLOW指令来尽量多的增加并行操作。对于FCS-MPC执行并行操作的directive如下所示：
+  ```
+  set_directive_dataflow "FCSMPC"
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_Ud_Uq"
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_DELTA_Id_Iq"
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_SW_EFF"
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_UK_OPT"
+  ```
+  最终实现的latency为下图所示：
+  <center>
+
+  ![latency](picture/pipline_for_performance/latency.png)
+  </center>
+  至此，第二步Pipline for performance已经完成。该部分主要是使用PIPLINE结合rewind和flush参数对for循环进行流水线化处理，另外使用DATAFLOW在各个for循环的function间使用fifo实现流水线操作，将整体延迟从5.84us降低至1.68us。
 
 ### 1.3.3. Optimize Structures
-
+  如果流水线化不能满足所需性能时，需通过对结构进行最优化来提升性能。
 ### 1.3.4. Reduce Latency
 
 ### 1.3.5. Improve Area
