@@ -265,6 +265,8 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
   |    DATA_PACK     |                    把结构体的数据字段打包到字宽更宽的单一标量中。                    |
   |  LOOP_TRIPCOUNT  | 用于含变量边界的循环。提供估算的循环迭代计数。这对综合没有影响，只对报告功能有影响。 |
   | Config Interface |  该配置用于控制与顶层函数实参无关联的 I/O 端口，支持从最终RTL 中去除未使用的端口。   |
+
+
   在本阶段，应通过将PIPELINE指令应用于函数和循环，而对于包含函数和循环的顶层function使用DATAFLOW指令来尽量多的增加并行操作。对于FCS-MPC执行并行操作的directive如下所示：
   ```
   set_directive_dataflow "FCSMPC"
