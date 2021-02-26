@@ -2,7 +2,6 @@
 
   
 # PHASE 1. 使用Vivado HLS对PMSM模型预测控制算法加速
-    使用Vivado HLS工具对FCS-MPC算法加速
 ***
 
 ##  1.1. FCS-MPC算法基本原理
@@ -348,7 +347,7 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
   ![timming summary](picture/Step4_Optimize_Structures/timming.png)
   </center>
 
-  对**CAL_SW_EFF_OUTTER_LOOP**和**CAL_SW_EFF_INNER_LOOP**使用如下指令：
+  对**CAL_SW_EFF_OUTTER_LOOP**和**CAL_SW_EFF_INNER_LOOP**使用如下指令将循环展开：
   ```
   set_directive_unroll "FCSMPC/CAL_SW_EFF_OUTTER_LOOP"
   set_directive_unroll "FCSMPC/CAL_SW_EFF_INNER_LOOP"
@@ -371,7 +370,7 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
   | LOOP_FLATTEN | 允许把嵌套循环折叠为已改善时延的单一循环                 |
   |  LOOP_MERGE  | 合并连续循环，以缩短总体时延、增加共享和提升逻辑最优化。 |
 
-   在循环和函数流水线化时一般无需使用这些指令，因为在大多数应用中时延并非关键，通常吞吐量才是关键。如果循环和函数未流水线化，则吞吐量将受到时延限制，因为只有在上一个任务完成后，下一个任务才会开始读取下一组输入。
+   在循环和函数流水线化时一般无需使用这些指令，因为在大多数应用中时延并非关键，通常吞吐量才是关键。如果循环和函数未流水线化，则吞吐量将受到时延限制，因为只有在上一个任务完成后，下一个任务才会开始读取下一组输入。本设计并不适用上述指令，故舍去该步骤的优化。
 
 
 
@@ -434,17 +433,20 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 
   ![utilizaiton estimate](picture/Step5_Improve_Area/final_utilization_estimates.png)
   </center>
+  至此，使用Vivado HLS对模型预测控制算法进行加速工作已经全部完成。优化加速后，FCSMPC算法功能模块的启动时间(II)由原来的585 cycle降低至125 cycle，性能提升4.57倍。即，优化后，FCSMPC算法功能模块每运行一次需要128个cycle，thoughtput为100M/128=781.25K Sample/Second.
 
-##  目前已完成的工作
+#  PHASE 2.  VIVADO工程修改及上板验证
 
-  ###  修正电流采样信号链
-
-  ###  转子转速位置信号链改进
-
-  ###  模型预测控制的延迟补偿修正
+  ##  2.1 修正电流采样信号链
+  
 
 
+  ## 2.2  转子转速位置信号链改进
 
-##  目前仍需解决的问题
 
-###  解决过流导致的ap_start仅能保持一个时钟周期的问题
+
+  ## 2.3  模型预测控制的延迟补偿修正
+
+
+
+  ## 2.4 上板测试
