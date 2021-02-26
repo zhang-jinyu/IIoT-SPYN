@@ -1,10 +1,12 @@
-# 1. 基于Vivado HLS的PMSM模型预测控制算法加速
-- a 2021_CN_WinterCamp project：
 
-  学习使用HLS工具对FCS-MPC算法加速 ，并在Zedboard和EDDP平台上进行验证。
+
+  
+# PHASE 1. 使用Vivado HLS对PMSM模型预测控制算法加速
+    使用Vivado HLS工具对FCS-MPC算法加速
 ***
 
 ##  1.1. FCS-MPC算法基本原理
+
   根据控制量的不同, FCS-MPC可分为电流模型预测控制(MPCC)和转矩模型预测控制( MPTC). MPTC不但需要对转矩和磁链进行估测，还需要平衡转矩和磁链之间的控制性能，在价值函数中设置合适的加权因子，使MPTC灵活性受到影响。MPCC不需要对转矩和磁链进行估算和预测，计算量较小，可以通过提高采样频率或者增加预测步长提高系统性能. 本项目关注于单步电流模型预测控制算法的加速.
 
   d-q旋转坐标系永磁同步电机动态数学模型如下式所示：
@@ -69,6 +71,7 @@
 
 
 ## 1.2. 延迟补偿及算法实现流程
+
   在非理想情况下，存在如下几种延迟：
   - Measurement delay:在EDDP中，该部分延迟主要由sinc3 filter引起，当ad7403的驱动时钟为20MHZ时，不同的抽取率引起的延迟如下表所示：
   <center>
@@ -106,7 +109,8 @@
   ![图1.2 延迟补偿模型预测算法](picture/增加延迟补偿.png)
   </center>
 
-## 1.3. 基于Vivado HLS的FCS-MPC算法加速
+## 1.3. 使用Vivado HLS对FCS-MPC算法进行加速
+
   模型预测控制算法的实现主要是在Vivado HLS和Vivado两个EDA设计工具中完成。首先由Vivado HLS部分完成模型预测控制算法部分进行加速，该部分完成的是实现C++高级语言到寄存器级硬件描述语言（Verilog）的转化，并将其封装成后续可进行图形化模块设计的IP核；然后在Vivado设计套件中完成矢量控制的基于IP核的模块化设计（Block Design）进而完成寄存器传输级（RTL）到比特流的FPGA设计。基于HLS的模型预测控制算法设计流程如下图所示。
   <center>
 
@@ -251,7 +255,9 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 至此，第一部分Initial Optimizations已经完成。该部分完成两个主要工作：
 1. 对输入输出接口进行了设置并添加控制信号(block level protocol)
 2. 将四个16位输入端口整合为64位输入端口，并修改原代码，将输入端口设置为使用axistream传输数据。(port level protocol)
+
 ### 1.3.2. Pipline for Performance 
+
   完成第一步定义接口后，接下来需要对function和loop进行流水线化设计。实现高性能设计的关键在于使用PIPELINE和 DATAFLOW Directive来对函数、循环进行流水线化。在不使用流水线化的情况下，操作会顺序执行直至函数完成，然后才能开始执行函数的下一步操作或下一项传输事务。使用流水线时，一旦硬件资源变为可用，下一项传输事务就会即刻启动。流水线设计原理如下图所示：
   <center>
 
@@ -267,9 +273,8 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
   | Config Interface |  该配置用于控制与顶层函数实参无关联的 I/O 端口，支持从最终RTL 中去除未使用的端口。   |
 
 
-  在本阶段，应通过将PIPELINE指令应用于函数和循环，而对于包含函数和循环的顶层function使用DATAFLOW指令来尽量多的增加并行操作。对于FCS-MPC执行并行操作的directive如下所示：
+  在本阶段，应通过将PIPELINE指令应用于函数和循环，对于FCS-MPC执行并行操作的directive如下所示：
   ```
-  set_directive_dataflow "FCSMPC"
   set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_Ud_Uq"
   set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_DELTA_Id_Iq"
   set_directive_pipeline -enable_flush -rewind "FCSMPC/LOOP_CAL_SW_EFF"
@@ -283,12 +288,152 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
   至此，第二步Pipline for performance已经完成。该部分主要是使用PIPLINE结合rewind和flush参数对for循环进行流水线化处理，另外使用DATAFLOW在各个for循环的function间使用fifo实现流水线操作，将整体延迟从5.84us降低至1.68us。
 
 ### 1.3.3. Optimize Structures
-  如果流水线化不能满足所需性能时，需通过对结构进行最优化来提升性能。
+
+  在设计中尽可能多的创建流水线化后，需使用分析透视图来核查设计。如果流水线化不能满足所需性能时，需通过下表指令对结构进行最优化来提升性能：
+  |       指令和配置       | 描述                                                                                                   |
+  | :--------------------: | ------------------------------------------------------------------------------------------------------ |
+  |    ARRAY_PARTITION     | 把大型数组分区为多个较小数组或分区为单独的寄存器，以改善数据访问并消除块RAM 瓶颈。                     |
+  |       DEPENDENCE       | 用于提供附加信息，这些信息可用于克服循环附带的依赖关系并支持循环流水线化（或以较低时间间隔流水线化）。 |
+  |         INLINE         | 内联函数，消除所有函数层级。用于跨越函数边界实现逻辑最优化，通过减少函数调用开销来改善时延/时间间隔。  |
+  |         UNROLL         | 展开 for 循环，创建多个独立操作而非单个操作集。                                                        |
+  | Config Array Partition | 该配置用于判断包括全局数组在内的数组分区方式，以及分区是否会影响数组端口。                             |
+  |     Config Compile     | 控制综合专用最优化功能，例如自动循环流水线化和浮点运算最优化。                                         |
+  |    Config Schedule     | 判断综合调度阶段的工作量以及输出消息的详细程度，并指定是否应在流水线化任务中放宽 II 以实现时序收敛。   |
+  |     CONFIG_UNROLL      | 允许自动展开低于指定循环迭代次数的所有循环.                                                            |
+
+  对for循环进行pipline后的synthsis report的loop latency中的**CAL_SW_EFF_LOOP**和**CAL_J_LOOP**的启动时间间隔（II)均未达到1，如下图所示：
+  <center>
+
+  ![loop_latency_report](picture/Step4_Optimize_Structures/pipline后cal_j循环和cal_sw_eff循环的II均未达到1.png)
+  </center>
+
+  使用分析透视图核查设计后，可知，在**CAL_SW_EFF_LOOP**中，sw_eff++读加操作需要两个时钟周期：
+  <center>
+
+  ![sw_eff](picture/Step4_Optimize_Structures/sw_eff_befored_partitioned.png)
+  </center>
+  对于sw_eff[8]使用array_partition指令：
+
+  ```
+  set_directive_array_partition -type complete -dim 1 "FCSMPC" sw_eff
+  ```
+
+  综合后，CAL_SW_EFF_OUTER_loop ii=1, loop summary如下图所示：
+  <center>
+
+  ![sw_eff_array_partition](picture/Step4_Optimize_Structures/sw_eff_after_loop_ii=1.png)
+  </center>
+
+  同样，对影响**CAL_J_LOOP**的数组J[]应用array_partition指令：
+  
+  ```
+  set_directive_array_partition -type complete -dim 1 "FCSMPC" J
+  ```
+  最终loop summary如下图所示：
+  <center>
+
+  ![loop_summary](picture/Step4_Optimize_Structures/loop_summary_with_j_sw_eff_partition.png)
+  </center>
+
+  lantency 如下图所示：
+  <center>
+
+  ![latency](picture/Step4_Optimize_Structures/latency.png)
+  </center>
+
+  timing summary如下图所示：
+
+  <center>
+
+  ![timming summary](picture/Step4_Optimize_Structures/timming.png)
+  </center>
+
+  对**CAL_SW_EFF_OUTTER_LOOP**和**CAL_SW_EFF_INNER_LOOP**使用如下指令：
+  ```
+  set_directive_unroll "FCSMPC/CAL_SW_EFF_OUTTER_LOOP"
+  set_directive_unroll "FCSMPC/CAL_SW_EFF_INNER_LOOP"
+  ```
+  使用上述指令综合后，timing满足设计要求：
+  <center>
+
+  ![timing](picture/Step4_Optimize_Structures/loop_unrolled_timming_summary.png)
+  </center>
+
+  至此本节设计完成。该部分主要使用了array partition指令和loop unroll指令来分别对启动时间和timming latency来进行优化，优化结果满足性能要求。
 ### 1.3.4. Reduce Latency
+
+  当 Vivado HLS 完成最大程度缩短启动时间间隔后，会自动尽可能缩短时延。下表中列出了有助于缩短时延或指定特定时间的最优化指令。
+
+
+  |     指令     | 描述                                                     |
+  | :----------: | -------------------------------------------------------- |
+  |   LATENCY    | 允许指定最小和最大时延约束。                             |
+  | LOOP_FLATTEN | 允许把嵌套循环折叠为已改善时延的单一循环                 |
+  |  LOOP_MERGE  | 合并连续循环，以缩短总体时延、增加共享和提升逻辑最优化。 |
+
+   在循环和函数流水线化时一般无需使用这些指令，因为在大多数应用中时延并非关键，通常吞吐量才是关键。如果循环和函数未流水线化，则吞吐量将受到时延限制，因为只有在上一个任务完成后，下一个任务才会开始读取下一组输入。
+
+
 
 ### 1.3.5. Improve Area
 
+  在满足所需性能目标 （或 II）后，下一步是在保持性能不变的情况下缩小面积。
+  如果已使用 **DATAFLOW** 最优化且 Vivado HLS 无法判定设计中的任务是否在流送数据，那么Vivado HLS会使用乒乓缓存 (**ping-pong buffer**) 来实现数据流任务之间的存储器通道。如果设计已完成流水线化且数据正在从一个任务流送到下一个任务，那么使用数据流配置 **config_dataflow** 把默认存储器通道中使用的乒乓缓存转换为 FIFO 缓存即可显著缩小面积。随后可把 FIFO 深度设置为需要的最小值。
 
+  数据流配置 **config_dataflow** 可指定所有存储器通道的默认实现方式。您可以使用 **STREAM** 指令指定哪些单独的数组将实现为块RAM以及哪些数组将实现为 FIFO。
+  最大程度减少设计实现所使用的资源时，可尝试使用如下指令:
+
+  |      指令       | 描述                                                                                                 |
+  | :-------------: | ---------------------------------------------------------------------------------------------------- |
+  |   ALLOCATION    | 指定所使用的操作、核或函数的数量限制。这样会强制共享硬件资源并可能增大时延。                         |
+  |    ARRAY_MAP    | 把多个较小的数组结合成单个大型数组以帮助减少块 RAM 资源数量。                                        |
+  |  ARRAY_RESHAPE  | 把数组从多元素数组重塑为字宽更宽的数组。用于在不增加使用的块 RAM 数量的前提下提升块 RAM 访问。       |
+  |   LOOP_MERGE    | 合并连续循环，以缩短总体时延、增加共享和提升逻辑最优化。                                             |
+  |   OCCURRENCE    | 在对函数或循环进行流水线化时使用，用于指定某个位置的代码执行速度低于外围函数或循环中的代码执行速度。 |
+  |    RESOURCE     | 指定将特定的库资源 （核）用于实现 RTL 中的变量 （数组、算术运算或函数实参）。                        |
+  |     STREAM      | 指定在数据流最优化期间把特定存储器通道实现为 FIFO 或 RAM。                                           |
+  |   Config Bind   | 判断综合绑定阶段的工作量，可用于在全局层面最大限度减少使用的运算数量。                               |
+  | Config Dataflow | 该配置用于指定数据流最优化中的默认内存通道和 FIFO 深度。                                             |
+
+  尝试使用ARRAY_RESHAPE指令代替ARRAY_PARTITION指令综合后， 延迟、资源占用率均明显增加，故舍弃。
+  使用dataflow指令应用于顶层函数，综合后资源占有率稍有下降:
+  <center>
+
+  ![dataflow_vs_without_dataflow](picture/Step5_Improve_Area/dataflow_vs_no_dataflow.png)
+  </center>
+
+  故本设计中最终使用的全部directive为：
+
+  ```
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/CAL_UD_UQ_LOOP"
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/CAL_ID_IQ_LOOP"
+  set_directive_pipeline -enable_flush -rewind "FCSMPC/CAL_J_LOOP"
+  set_directive_interface -mode axis -register -register_mode both "FCSMPC" s_axis
+  set_directive_array_partition -type complete -dim 1 "FCSMPC" sw_eff
+  set_directive_array_partition -type complete -dim 1 "FCSMPC" uk_pos
+  set_directive_array_partition -type complete -dim 1 "FCSMPC" J
+  set_directive_unroll "FCSMPC/CAL_SW_EFF_OUTTER_LOOP"
+  set_directive_unroll "FCSMPC/CAL_SW_EFF_INNER_LOOP"
+  set_directive_dataflow "FCSMPC"
+  ```
+  最后实现的加速性能参数如下：
+  **Timing：**
+  <center>
+
+  ![timing](picture/Step5_Improve_Area/final_timing_Report.png)
+  </center>
+
+  **Latency:**
+  <center>
+
+  ![lantency](picture/Step5_Improve_Area/final_latency_report.png)
+  </center>
+
+  **Utilization Estimates:**
+  <center>
+
+  ![utilizaiton estimate](picture/Step5_Improve_Area/final_utilization_estimates.png)
+  </center>
 
 ##  目前已完成的工作
 
