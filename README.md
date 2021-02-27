@@ -115,8 +115,9 @@
 
   ![图1.3 模型预测控制算法设计流程](picture/模型预测控制算法设计流程.png)
   </center>
+
   使用Vivado HLS对FCS-MPC算法加速分为如下步骤：
-  1. Initial Optimizations:初始优化，该部分的主要任务为定义接口
+  1.  Initial Optimizations:初始优化，该部分的主要任务为定义接口
   2. Pipline for Performance：对loop和function进行流水线化处理，尽可能多的对数据进行并行处理，提升性能。
   3. Optimize Structures：优化结构，对RAM和port进行partition；清除错误依存关系。
   4. Reduce Latency：缩短时延
@@ -438,7 +439,7 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 #  PHASE 2.  VIVADO工程修改及上板验证
 
   ##  2.1 修正电流采样信号链
-  
+
 
 
   ## 2.2  转子转速位置信号链改进
