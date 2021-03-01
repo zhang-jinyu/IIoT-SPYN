@@ -2,7 +2,21 @@
 
   
 # PHASE 1. 使用Vivado HLS对PMSM模型预测控制算法加速
-***
+
+- [PHASE 1. 使用Vivado HLS对PMSM模型预测控制算法加速](#phase-1-使用vivado-hls对pmsm模型预测控制算法加速)
+  - [1.1. FCS-MPC算法基本原理](#11-fcs-mpc算法基本原理)
+  - [1.2. 延迟补偿及算法实现流程](#12-延迟补偿及算法实现流程)
+  - [1.3. 使用Vivado HLS对FCS-MPC算法进行加速](#13-使用vivado-hls对fcs-mpc算法进行加速)
+    - [1.3.1. Initial Optimizations](#131-initial-optimizations)
+    - [1.3.2. Pipline for Performance](#132-pipline-for-performance)
+    - [1.3.3. Optimize Structures](#133-optimize-structures)
+    - [1.3.4. Reduce Latency](#134-reduce-latency)
+    - [1.3.5. Improve Area](#135-improve-area)
+- [PHASE 2.  VIVADO工程修改及上板验证](#phase-2--vivado工程修改及上板验证)
+  - [2.1 修正电流采样信号链](#21-修正电流采样信号链)
+  - [2.2  转子转速位置信号链改进](#22--转子转速位置信号链改进)
+  - [2.3  模型预测控制的延迟补偿修正](#23--模型预测控制的延迟补偿修正)
+  - [2.4 上板测试](#24-上板测试)
 
 ##  1.1. FCS-MPC算法基本原理
 
@@ -82,7 +96,7 @@
   |         32          |        625         |               9               |       1.6        |
   </center>
   由上表可知电流采样信号链延迟最低为1.6微秒。
-  
+
   - Uplink communication delay:上行链路延迟，指测量结果传递至MPC计算单元的延迟，该部分延迟主要由clark变换IP核、park变换IP核引起。
   - Computation delay:计算延迟，该部分延迟主要由计算单元引起，未经HLS加速的MPC算法计算延迟为584us。
   - Downlink delay:下行链路延迟，MPC求解出的最优开关位置信号后经过SN74LVC1G97DCK/ADUM4224触发MOSFET动作引起的延迟。查询datasheet可得该部分延迟在200ns以下。
