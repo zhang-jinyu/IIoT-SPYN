@@ -3,7 +3,9 @@
   
 # PHASE 1. 使用Vivado HLS对PMSM模型预测控制算法加速
 
+## CONTENT
 - [PHASE 1. 使用Vivado HLS对PMSM模型预测控制算法加速](#phase-1-使用vivado-hls对pmsm模型预测控制算法加速)
+  - [CONTENT](#content)
   - [1.1. FCS-MPC算法基本原理](#11-fcs-mpc算法基本原理)
   - [1.2. 延迟补偿及算法实现流程](#12-延迟补偿及算法实现流程)
   - [1.3. 使用Vivado HLS对FCS-MPC算法进行加速](#13-使用vivado-hls对fcs-mpc算法进行加速)
