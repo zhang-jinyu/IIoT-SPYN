@@ -82,6 +82,7 @@
   |         32          |        625         |               9               |       1.6        |
   </center>
   由上表可知电流采样信号链延迟最低为1.6微秒。
+  
   - Uplink communication delay:上行链路延迟，指测量结果传递至MPC计算单元的延迟，该部分延迟主要由clark变换IP核、park变换IP核引起。
   - Computation delay:计算延迟，该部分延迟主要由计算单元引起，未经HLS加速的MPC算法计算延迟为584us。
   - Downlink delay:下行链路延迟，MPC求解出的最优开关位置信号后经过SN74LVC1G97DCK/ADUM4224触发MOSFET动作引起的延迟。查询datasheet可得该部分延迟在200ns以下。
@@ -439,7 +440,7 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 #  PHASE 2.  VIVADO工程修改及上板验证
 
   ##  2.1 修正电流采样信号链
-
+    
 
 
   ## 2.2  转子转速位置信号链改进
