@@ -1,0 +1,33 @@
+拟合过程，首先对Ia去除直流分量 ia_dec=ia-240.4093
+然后对IA_DEC使用如下公式进行拟合：
+y=a1*sin(b1*x+c1)
+Ia拟合结果如下：
+General model Sin1:
+     f(x) =  a1*sin(b1*x+c1)
+Coefficients (with 95% confidence bounds):
+       a1 =       472.9  (472.5, 473.3)
+       b1 =   0.0003906  (0.0003904, 0.0003908)
+       c1 =      -3.103  (-3.104, -3.101)
+
+Goodness of fit:
+  SSE: 4.747e+06
+  R-square: 0.9974
+  Adjusted R-square: 0.9974
+  RMSE: 17.02
+
+Ib拟合结果如下：
+General model:
+     f(x) = 472.9*sin(0.0003906*x+c)
+Coefficients (with 95% confidence bounds):
+       c =       1.089  (1.088, 1.09)
+
+Goodness of fit:
+  SSE: 5.852e+06
+  R-square: 0.9969
+  Adjusted R-square: 0.9969
+  RMSE: 18.9
+
+综上，拟合结果为：ia=472.9*sin(0.0003906*x-3.103)+240.4093
+ib=472.9*sin(0.0003906*x+1.089)+19.8840
+ia_dec的最大值为472.9000
+ib_dec的最大值为472.9000

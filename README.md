@@ -16,6 +16,8 @@
     - [1.3.5. Improve Area](#135-improve-area)
 - [PHASE 2.  VIVADO工程修改及上板验证](#phase-2--vivado工程修改及上板验证)
   - [2.1 修正电流采样信号链](#21-修正电流采样信号链)
+    - [2.1.1 实验法修正电流采样信号链](#211-实验法修正电流采样信号链)
+    - [2.2.2 计算法修正电流采样信号链](#222-计算法修正电流采样信号链)
   - [2.2  转子转速位置信号链改进](#22--转子转速位置信号链改进)
   - [2.3  模型预测控制算法的延迟补偿修正](#23--模型预测控制算法的延迟补偿修正)
   - [2.4 上板测试](#24-上板测试)
@@ -456,7 +458,105 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 #  PHASE 2.  VIVADO工程修改及上板验证
 
   ##  2.1 修正电流采样信号链
-    
+  ### 2.1.1 实验法修正电流采样信号链
+  在电机运行过程中，打开VIVADO 使用JTAG与FPGA建立连接后，使用ILA获取AD7403输出信号，获得12位(H)共16384组数据。该数据从最高位至最低位依次为 ：未定义(4位）、vbus（4位）、Ib（4位）、Ia（4位）对上述数据初步处理，删除前八位后，取后8位（H）数据待用。使用matlab对上述数据处理：
+
+  ```
+  b=hex2bin(a)
+  b1(:,1:16)=b(:,1:16)
+  b2(:,1:16)=b(:,17:32)
+  N=16
+  parfor k=1:8192
+  Ib(k,1)=bin2decsig(b1(k,1:16))
+  end
+  parfor j=1:8192
+  Ia(j,1)=bin2decsig(b2(j,1:16))
+  end
+  ```
+  整理数据后，简单计算求得ib直流增益为19.8840，ia直流增益为240.4093。
+  获得Ia、Ib数据后需要使用matlab对获得数据进行拟合。首先对Ia去除直流分量，然后对IA_DEC使用如下公式进行拟合：
+  $$
+  y=a_{1} * \sin \left(b_{1} x+c_{1}\right)
+  \tag9$$
+  Ia拟合结果如下：
+  ```
+General model Sin1:
+     f(x) =  a1*sin(b1*x+c1)
+Coefficients (with 95% confidence bounds):
+       a1 =       472.9  (472.5, 473.3)
+       b1 =   0.0003906  (0.0003904, 0.0003908)
+       c1 =      -3.103  (-3.104, -3.101)
+  ```
+  具体拟合效果及拟合优度如下图所示：
+  <center>
+
+  ![ia拟合结果](Phase_2/current_signal_chain_signal/init_data/ILA/2_initmode_提取7403数据/ia拟合数据.png)
+  </center>
+
+  同理，可得Ib拟合结果：
+  ```
+General model:
+     f(x) = 472.9*sin(0.0003906*x+c)
+Coefficients (with 95% confidence bounds):
+       c =       1.089  (1.088, 1.09)
+  ```
+
+  接下来对示波器同步获取数据进行处理。在上步使用ILA对ad7403采样的同时使用示波器获取电机相电流。
+  <center>
+
+  ![示波器相电流](Phase_2/current_signal_chain_signal/init_data/OSCILLISCOPE/initmode0_oscilliscope.png)
+  </center>
+
+  将使用示波器获取的数据进行降采样（降采样系数50）、裁剪（剪除0.2s后的数据）后，使用matlab分两次进行拟合。
+  
+  首先使用sum of sine 对数据进行拟合。未加直流增益的拟合结果如下所示：
+  ```
+General model Sin1:
+     f(x) =  a1*sin(b1*x+c1)
+Coefficients (with 95% confidence bounds):
+       a1 =       1.408  (1.405, 1.41)
+       b1 =       38.97  (38.96, 38.98)
+       c1 =      0.2843  (0.2825, 0.2861)
+
+Goodness of fit:
+  SSE: 60.62
+  R-square: 0.9932
+  Adjusted R-square: 0.9932
+  RMSE: 0.08245
+```
+
+在上述获得的系数基础上引入直流增益C再次拟合，获得最终结果如下图所示
+：
+<center>
+
+![示波器数据拟合结果](Phase_2/current_signal_chain_signal/init_data/OSCILLISCOPE/拟合后的数据_osc.jpg)
+</center>
+
+```
+General model:
+     f(x) = 1.408*sin(38.97*x+0.2843)+c
+Coefficients (with 95% confidence bounds):
+       c =    -0.07822  (-0.07876, -0.07768)
+
+Goodness of fit:
+  SSE: 6.042
+  R-square: 0.9993
+  Adjusted R-square: 0.9993
+  RMSE: 0.02603
+```
+
+综合ILA和示波器获得的数据可得该开发板电流采样信号链A-D为：
+
+设ad7403输出电流数值为ia_digi,设实际电流值为ia_osc,则
+```
+ia_osc=((ia_digi-240.4093)/472.9)*1.408(A)
+```
+同理，设ad7403输出电流值为ib_digi,设实际电流值为ib_osc,则
+```
+ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
+```
+
+### 2.2.2 计算法修正电流采样信号链
 
 
   ## 2.2  转子转速位置信号链改进
