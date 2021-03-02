@@ -376,7 +376,7 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
   ![timing](picture/Step4_Optimize_Structures/loop_unrolled_timming_summary.png)
   </center>
 
-  至此本节设计完成。该部分主要使用了array partition指令和loop unroll指令来分别对启动时间和timming latency来进行优化，优化结果满足性能要求。
+  至此本节设计完成。该部分主要使用了array partition指令和loop unroll指令来分别对启动时间间隔和timming latency来进行优化，优化结果满足性能要求。
 ### 1.3.4. Reduce Latency
 
   当 Vivado HLS 完成最大程度缩短启动时间间隔后，会自动尽可能缩短时延。下表中列出了有助于缩短时延或指定特定时间的最优化指令。
