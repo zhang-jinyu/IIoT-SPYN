@@ -165,7 +165,7 @@
   4. Memory Interface Protocol
   5. Bus Protocol
 
-实际HLS项目工程中，对于**Block Level Protocol**部分的INTERFACE不使用任何Directive，综合后，HLS工具会为FCS-MPC Block缺省设置为**ap_control_hs**接口协议，对于输入端口缺省设置为**ap_none**协议，对于输出端口设置为**ap_vld**协议。故删除原设计中block level protocol部分所有directive，并使用Vivado_hls对FCS-MPC初步综合后的interface summary如下图所示：
+实际HLS项目工程中，对于**Block Level Protocol**部分的INTERFACE不使用任何Directive，综合后，HLS工具会为FCS-MPC Block缺省设置为**ap_control_hs**接口协议，对于输入端口缺省设置为**ap_none**协议，对于输出端口设置为**ap_vld**协议。故删除原设计中block level protocol部分所有directive，并使用Vivado_hls对FCS-MPC进行初步综合。综合后的interface summary如下图所示：
 <center>
 
 ![图1.4 FCS-MPC算法初步综合后的interface summary](picture/original_synthsis_block_level_protocol.png)
