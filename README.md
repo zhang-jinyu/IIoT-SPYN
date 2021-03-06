@@ -17,6 +17,7 @@
 - [PHASE 2.  VIVADO工程修改及上板验证](#phase-2--vivado工程修改及上板验证)
   - [2.1 修正电流采样信号链](#21-修正电流采样信号链)
   - [2.2 上板测试](#22-上板测试)
+  - [2.3 其他相关工作](#23-其他相关工作)
 
 ##  1.1. FCS-MPC算法基本原理
 
@@ -553,7 +554,37 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
 
   ## 2.2 上板测试
   
+  ，使用JTAG链接zedboard，在电机运行时，使用ILA观察FCSMPC，
 
+  未加速前FCSMPC每运行一次需要585个时钟周期，而当ad7403抽取率为32时，每160个时钟周期输出电流信号，即下一个时钟信号来临时，FCSMPC远未运行完毕。实际上FCSMPC计算单元在第四个id_m\iq_m电流信号到来时才能重新输入，未加速前FCSMPC运行时钟周期如下图所示：
+
+  ![未加速前](picture/block_level_protocol/ila/original_signal/block_level_protocol_origin_signal.png)
+
+  使用HLS对FCSMPC加速后，将phase1中生成的ip核添加到spyn的vivado工程中后，上板测试。FCSMPC计算单元每运行一次为126个时钟周期，FCSMPC正常工作。如下图所示：
+
+  ![ila测试FCSMPC_AP_CONTROL](Phase_2/ILA_DATA/FCSMPC_CAL_INTERVAL_START_TO_DONE_126.png)
+
+  修改原代码，更正相应的延迟补偿步数为1，修改采样时间，重新生成bitstream，上板测试，电流波形如下图所示：
+  
+  <center>
+
+  ![电流波形](Phase_2/picture/RigolDS5.png)
+  </center>
+
+  测试视频如下图所示：
+  <center>
 
   [![视频测试](Phase_2/picture/picture.png)](https://youtu.be/ZH6ED-wAIwY "测试视频")
+  </center>
   
+  ## 2.3 其他相关工作
+
+  1. 修改AD7403 IP核，从而修正因PCB板A/B相AD7403的高频驱动时钟信号布线未严格等长（实际明显不一样）造成的驱动细微不同步导致当A相tvalid高电平有效时，b相传递的是暂态电流值，最终导致B相-32767后的直流分量偏大的问题。
+  <center>
+
+  ![sinc3仿真](Phase_2/picture/sinc3_behav_dec_rate_32.png)
+   </center>
+
+  2. 制作PYNQ_For_Zedboard 镜像。
+
+至此Phase2中的验证工作全部完成，该部分主要的工作是对加速后的模型预测控制算法上板验证。
