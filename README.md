@@ -580,11 +580,13 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
   ## 2.3 其他相关工作
 
   1. 修改AD7403 IP核，从而修正因PCB板A/B相AD7403的高频驱动时钟信号布线未严格等长（实际明显不一样）造成的驱动细微不同步导致当A相tvalid高电平有效时，b相传递的是暂态电流值，最终导致B相-32767后的直流分量偏大的问题。
+
   <center>
 
   ![sinc3仿真](Phase_2/picture/sinc3_behav_dec_rate_32.png)
    </center>
 
-  2. 制作PYNQ_For_Zedboard 镜像。
+
+  1. 制作PYNQ_For_Zedboard 镜像。
 
 至此Phase2中的验证工作全部完成，该部分主要的工作是对加速后的模型预测控制算法上板验证。
