@@ -552,5 +552,5 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
 ```
 
   ## 2.2 上板测试
-  [![视频测试](Phase_2/picture/picture.png)](https://youtu.be/ZH6ED-wAIwY)
+  [![视频测试](Phase_2/picture/picture.png)](https://youtu.be/ZH6ED-wAIwY "测试视频")
   
