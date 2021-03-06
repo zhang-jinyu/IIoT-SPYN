@@ -589,4 +589,6 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
 
   2 制作PYNQ_For_Zedboard 镜像。
 
+  3 将PYNQ-z1的vivado工程移植至Zedboard
+
 至此Phase2中的验证工作全部完成，该部分主要的工作是对加速后的模型预测控制算法上板验证。
