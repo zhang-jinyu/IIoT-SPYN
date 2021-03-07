@@ -17,7 +17,7 @@
 - [PHASE 2.  VIVADO工程修改及上板验证](#phase-2--vivado工程修改及上板验证)
   - [2.1 修正电流采样信号链](#21-修正电流采样信号链)
   - [2.2 上板测试](#22-上板测试)
-  - [2.3 完成的与本项目相关的其他工作](#23-完成的与本项目相关的其他工作)
+  - [2.3 已完成的与本项目相关的其他工作](#23-已完成的与本项目相关的其他工作)
 - [项目总结](#项目总结)
 
 ##  1.1. FCS-MPC算法基本原理
@@ -451,7 +451,13 @@ csynthssis之后，**angle**、**RPM**、**id_m**、**iq_m**输入接口已经�
 
   ![utilizaiton estimate](picture/Step5_Improve_Area/final_utilization_estimates.png)
   </center>
-  至此，使用Vivado HLS对模型预测控制算法进行加速工作已经全部完成。优化加速后，FCSMPC算法功能模块的启动时间(II)由原来的585 cycle降低至125 cycle，性能提升4.57倍。即，优化后，FCSMPC算法功能模块每运行一次需要128个cycle，thoughtput为100M/128=781.25K Sample/Second.
+  至此，使用Vivado HLS对模型预测控制算法进行加速工作已经全部完成。本阶段在原设计的基础上进一步做了如下工作：
+
+  1. 将FCSMPC的输入信号RPM/ID/IQ/angle_data整合为64位信号，并使用AXI-Sream通信协议进行传输，保证信号传输的一致性，进一步缩减因提取信号造成的代码冗余。
+  2. 结合透视图、数组分割等工具和指令，顺利将sw_eff等for循环流水线化后initial interval降低为1
+  3. 将latency由25降至10以内，满足timing requirement。 
+
+  优化加速后，FCSMPC算法功能模块的启动时间(II)由原来的585 cycle降低至125 cycle，性能提升4.57倍。即，优化后，FCSMPC算法功能模块每运行一次需要128个cycle，thoughtput为100M/128=781.25K Sample/Second.
 
 #  PHASE 2.  VIVADO工程修改及上板验证
 
@@ -565,11 +571,24 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
 
   ![ila测试FCSMPC_AP_CONTROL](Phase_2/ILA_DATA/FCSMPC_CAL_INTERVAL_START_TO_DONE_126.png)
 
-  修改原代码，更正相应的延迟补偿步数为1，修改采样时间，重新生成bitstream，上板测试，电流波形如下图所示：
+  修改原代码，更正相应的延迟补偿步数为1，修改采样时间，重新生成bitstream，上板测试。受AD7403电流频率掣肘，最终该算法运行一次所需的时间为160个时钟周期。当惩罚项为零时，开关频率最高为625KHz，上板测试稳定运行。电流波形虽然谐波仍较大，但已经与FOC十分接近了。使用电流探头（电流探头带宽为25MHZ）获取的A相电流波形如下图所示：
   
   <center>
 
-  ![电流波形](Phase_2/picture/RigolDS5.png)
+  ![电流波形1](Phase_2/picture/RigolDS5.png)
+  </center>
+
+  <center>
+
+  ![电流波形2](Phase_2/picture/RigolDS6.png)
+  </center>
+
+  频谱如下图所示：
+
+  <center>
+
+
+  ![FCSMPC频谱](Phase_2/picture/spectrum.png)
   </center>
 
   测试视频如下图所示：
@@ -578,21 +597,24 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
   [![视频测试](Phase_2/picture/picture.png)](https://youtu.be/ZH6ED-wAIwY "测试视频")
   </center>
   
-  ## 2.3 完成的与本项目相关的其他工作
+  ## 2.3 已完成的与本项目相关的其他工作
 
-  1 修改AD7403 IP核，从而修正因PCB板A/B相AD7403的高频驱动时钟信号布线未严格等长（实际明显不一样）造成的驱动细微不同步导致的当A相tvalid高电平有效时，b相传递的是暂态电流值，最终导致B相-32767后的直流分量偏大的问题。
-
+  1. 修改AD7403 IP核，从而修正因PCB板A/B相AD7403的高频驱动时钟信号布线未严格等长（实际明显不一样）造成的驱动细微不同步导致的当A相tvalid高电平有效时，b相传递的是暂态电流值，最终导致B相-32767后的直流分量偏大的问题：
+   
   <center>
 
   ![sinc3仿真](Phase_2/picture/sinc3_behav_dec_rate_32.png)
    </center>
 
+  2.  为FCSMPC加入130ns死区时间。
+   
+  3.  rpm计算时钟周期为固定的60个时钟周期，我认为angle补偿策略与rpm实际运行速率无关，故将原FCSMPC算法中angle的分段补偿策略设置为固定值1。
+   
+  4. 将PYNQ-z1的vivado工程移植至Zedboard
 
-  2 制作PYNQ_For_Zedboard 镜像。
+  5. 制作PYNQ_2.5_For_Zedboard 镜像。
 
-  3 将PYNQ-z1的vivado工程移植至Zedboard
-
-至此Phase2中的验证工作全部完成，该部分主要的工作是对加速后的模型预测控制算法上板验证。
+至此Phase2中的验证工作全部完成。
 
 # 项目总结
 
