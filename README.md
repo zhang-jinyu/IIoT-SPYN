@@ -599,22 +599,16 @@ ib_osc=((ib_digi-19.8840)/472.9)*1.408（A)
   
   ## 2.3 已完成的与本项目相关的其他工作
 
-  1. 修改AD7403 IP核，从而修正因PCB板A/B相AD7403的高频驱动时钟信号布线未严格等长（实际明显不一样）造成的驱动细微不同步导致的当A相tvalid高电平有效时，b相传递的是暂态电流值，最终导致B相-32767后的直流分量偏大的问题：
+
+  1.  为FCSMPC加入130ns死区时间。
    
-  <center>
-
-  ![sinc3仿真](Phase_2/picture/sinc3_behav_dec_rate_32.png)
-   </center>
-
-  2.  为FCSMPC加入130ns死区时间。
+  2.  rpm计算时钟周期为固定的60个时钟周期，我认为angle补偿策略与rpm实际运行速率无关，故将原FCSMPC算法中angle的分段补偿策略更改为固定值1。
    
-  3.  rpm计算时钟周期为固定的60个时钟周期，我认为angle补偿策略与rpm实际运行速率无关，故将原FCSMPC算法中angle的分段补偿策略更改为固定值1。
-   
-  4. 将PYNQ-z1的vivado工程移植至Zedboard
+  3. 将PYNQ-z1的vivado工程移植至Zedboard
 
-  5. 制作PYNQ_2.5_For_Zedboard 镜像。
+  4. 制作PYNQ_2.5_For_Zedboard 镜像。
 
-至此Phase2中的验证工作全部完成。除上述工作外，还解决了原设计中因FCSMPC运行速度与ad7403时延非整数倍引起的误差随时间增加而逐渐累积导致的性能随着运行时间逐渐变差的问题。
+至此Phase2中的验证工作全部完成。
 
 # 项目总结
 
