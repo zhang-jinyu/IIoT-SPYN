@@ -1,0 +1,61 @@
+<AutoPilot:ProjectResources xmlns:AutoPilot="com.autoesl.autopilot.ui.directiveView">
+    <sourceFile name="">
+        <directive functionName="FCSMPC" label="CAL_UD_UQ_LOOP" functionLabel="">
+            <pragma name="PIPELINE">
+                <option name="enable_flush" value="" positionalBoolean="1"/>
+                <option name="rewind" value="" positionalBoolean="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="CAL_ID_IQ_LOOP" functionLabel="">
+            <pragma name="PIPELINE">
+                <option name="enable_flush" value="" positionalBoolean="1"/>
+                <option name="rewind" value="" positionalBoolean="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="CAL_J_LOOP" functionLabel="">
+            <pragma name="PIPELINE">
+                <option name="enable_flush" value="" positionalBoolean="1"/>
+                <option name="rewind" value="" positionalBoolean="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="" functionLabel="">
+            <pragma name="INTERFACE">
+                <option name="axis" value="" positionalBoolean="mode"/>
+                <option name="register" value="" positionalBoolean="1"/>
+                <option name="both" value="" positionalBoolean="register_mode"/>
+                <option name="port" value="s_axis" positionalBoolean="4"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="" functionLabel="">
+            <pragma name="ARRAY_PARTITION">
+                <option name="variable" value="sw_eff" positionalBoolean="4"/>
+                <option name="complete" value="" positionalBoolean="type"/>
+                <option name="dim" value="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="" functionLabel="">
+            <pragma name="ARRAY_PARTITION">
+                <option name="variable" value="uk_pos" positionalBoolean="4"/>
+                <option name="complete" value="" positionalBoolean="type"/>
+                <option name="dim" value="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="" functionLabel="">
+            <pragma name="ARRAY_PARTITION">
+                <option name="variable" value="J" positionalBoolean="4"/>
+                <option name="complete" value="" positionalBoolean="type"/>
+                <option name="dim" value="1"/>
+            </pragma>
+        </directive>
+        <directive functionName="FCSMPC" label="CAL_SW_EFF_OUTTER_LOOP" functionLabel="">
+            <pragma name="UNROLL"/>
+        </directive>
+        <directive functionName="FCSMPC" label="CAL_SW_EFF_INNER_LOOP" functionLabel="">
+            <pragma name="UNROLL"/>
+        </directive>
+        <directive functionName="FCSMPC" label="" functionLabel="">
+            <pragma name="DATAFLOW"/>
+        </directive>
+    </sourceFile>
+</AutoPilot:ProjectResources>
+
